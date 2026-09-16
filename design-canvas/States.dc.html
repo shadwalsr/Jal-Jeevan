@@ -1,0 +1,126 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap">
+  <style>
+    body { margin: 0; }
+    .ui { font-family: "Public Sans", -apple-system, "Segoe UI", sans-serif; font-size: 14px; line-height: 1.45; color: #111111; }
+    .mono { font-family: "IBM Plex Mono", ui-monospace, "SFMono-Regular", monospace; font-variant-numeric: tabular-nums; }
+    a { color: #111111; } a:hover { color: #5A5A5A; }
+  </style>
+</helmet>
+
+<div class="ui" style="width: 900px; min-height: 820px; background: #FFFFFF; padding: 28px 32px; box-sizing: border-box; display: flex; flex-direction: column; gap: 26px;">
+
+  <div>
+    <div style="font-size: 19px; font-weight: 500;">States and vocabulary</div>
+    <div style="height: 1px; background: rgba(17,17,17,0.28); margin: 8px 0 0;"></div>
+  </div>
+
+  <!-- ---------- RISK SCALE ---------- -->
+  <div style="display: flex; flex-direction: column; gap: 10px;">
+    <div style="font-size: 13px; font-weight: 500;">Risk chips — a square colour chip plus a monospace number, never a pill</div>
+    <div style="height: 1px; background: rgba(17,17,17,0.12);"></div>
+    <div style="display: flex; gap: 26px; flex-wrap: wrap; align-items: center;">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span style="width: 14px; height: 14px; background: #3ECFA8; border: 1px solid rgba(17,17,17,0.28);"></span>
+        <span class="mono" style="font-size: 13px;">LOW 10/100</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span style="width: 14px; height: 14px; background: #D9C94F; border: 1px solid rgba(17,17,17,0.28);"></span>
+        <span class="mono" style="font-size: 13px;">MODERATE 28/100</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span style="width: 14px; height: 14px; background: #E3A53D; border: 1px solid rgba(17,17,17,0.28);"></span>
+        <span class="mono" style="font-size: 13px;">HIGH 61/100</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span style="width: 14px; height: 14px; background: #E3675A; border: 1px solid rgba(17,17,17,0.28);"></span>
+        <span class="mono" style="font-size: 13px;">EXTREME 88/100</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ---------- REJECTED ---------- -->
+  <div style="display: flex; flex-direction: column; gap: 10px;">
+    <div style="font-size: 13px; font-weight: 500;">A veto is not a high score — no number, no chip, a hatched marker instead</div>
+    <div style="height: 1px; background: rgba(17,17,17,0.12);"></div>
+    <div style="border-left: 3px solid #C2185B; padding: 2px 0 2px 14px; display: flex; flex-direction: column; gap: 6px;">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span style="width: 14px; height: 14px; border: 1px solid #C2185B; background-image: repeating-linear-gradient(45deg, #C2185B 0, #C2185B 1.4px, transparent 1.4px, transparent 5px);"></span>
+        <span style="font-weight: 500; color: #A3145E;">Not permitted — do not go</span>
+      </div>
+      <div style="font-size: 13px;">Vetoed before scoring, so no risk score exists. Scoring only runs on points that pass the legal and survivability checks.</div>
+      <div style="font-size: 13px; color: #5A5A5A;">Water depth 0.0 m is less than the vessel draft of 0.6 m plus a 1.0 m safety margin — grounding risk.</div>
+    </div>
+  </div>
+
+  <!-- ---------- LEGEND STATES ---------- -->
+  <div style="display: flex; flex-direction: column; gap: 10px;">
+    <div style="font-size: 13px; font-weight: 500;">Map legend — three states, so a blank map is never ambiguous</div>
+    <div style="height: 1px; background: rgba(17,17,17,0.12);"></div>
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px;">
+
+      <div style="border: 1px solid rgba(17,17,17,0.12); border-radius: 3px; padding: 12px; display: flex; flex-direction: column; gap: 8px;">
+        <div style="font-size: 13px; font-weight: 500;">Exclusions present</div>
+        <div style="display: flex; align-items: center; gap: 10px; font-size: 13px;">
+          <span style="width: 16px; height: 12px; flex-shrink: 0; border: 1px solid #C2185B; background-image: repeating-linear-gradient(45deg, #C2185B 0, #C2185B 1.4px, transparent 1.4px, transparent 5px);"></span>
+          <span>Sri Lanka EEZ</span>
+        </div>
+      </div>
+
+      <div style="border: 1px solid rgba(17,17,17,0.12); border-radius: 3px; padding: 12px; display: flex; flex-direction: column; gap: 8px;">
+        <div style="font-size: 13px; font-weight: 500;">Nothing in view</div>
+        <div style="font-size: 13px; color: #5A5A5A;">No exclusions in this view — pan south to Palk Bay to see one.</div>
+      </div>
+
+      <div style="border: 1px solid rgba(17,17,17,0.12); border-radius: 3px; padding: 12px; display: flex; flex-direction: column; gap: 8px;">
+        <div style="font-size: 13px; font-weight: 500;">Layer failed</div>
+        <div style="font-size: 13px; color: #A3145E;">Map layers failed to install (eez, mpa) — exclusions are NOT being shown.</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ---------- MEASUREMENTS ---------- -->
+  <div style="display: flex; flex-direction: column; gap: 10px;">
+    <div style="font-size: 13px; font-weight: 500;">Measurements are monospace and tabular — this is what makes it read as an instrument</div>
+    <div style="height: 1px; background: rgba(17,17,17,0.12);"></div>
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 40px;">
+      <div class="mono" style="font-size: 13px; display: flex; flex-direction: column;">
+        <div style="display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid rgba(17,17,17,0.12);"><span>Significant wave height</span><span>1.12 m</span></div>
+        <div style="display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid rgba(17,17,17,0.12);"><span>Wind</span><span>7.4 m/s</span></div>
+        <div style="display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid rgba(17,17,17,0.12);"><span>Tide</span><span>0.475 m rising</span></div>
+      </div>
+      <div class="mono" style="font-size: 13px; display: flex; flex-direction: column;">
+        <div style="display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid rgba(17,17,17,0.12);"><span>Depth</span><span>26 m</span></div>
+        <div style="display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid rgba(17,17,17,0.12);"><span>Sea surface temperature</span><span>28.41 °C</span></div>
+        <div style="display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid rgba(17,17,17,0.12);"><span>Gusts</span><span style="font-family: 'Public Sans', sans-serif; color: #5A5A5A;">not available</span></div>
+      </div>
+    </div>
+    <div style="font-size: 13px; color: #5A5A5A;">A value the source did not report reads “not available” in the UI face — never 0, never a dash. It is the one place the monospace column breaks, deliberately, because it is not a measurement.</div>
+  </div>
+
+  <!-- ---------- CONTROLS ---------- -->
+  <div style="display: flex; flex-direction: column; gap: 10px;">
+    <div style="font-size: 13px; font-weight: 500;">Controls — square, bordered, worded; one curve on the whole screen</div>
+    <div style="height: 1px; background: rgba(17,17,17,0.12);"></div>
+    <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+      <button style="font-family: inherit; font-size: 13px; height: 36px; padding: 0 14px; background: #FFFFFF; border: 1px solid rgba(17,17,17,0.28); border-radius: 3px; cursor: pointer;">Start monitoring</button>
+      <button style="font-family: inherit; font-size: 13px; height: 36px; padding: 0 14px; background: #FFFFFF; border: 1px solid rgba(17,17,17,0.12); border-radius: 3px; cursor: pointer;">Find safest route</button>
+      <button style="font-family: inherit; font-size: 13px; height: 36px; padding: 0 14px; background: #FFFFFF; border: 1px solid rgba(17,17,17,0.28); border-radius: 3px; cursor: pointer; outline: 2px solid #111111; outline-offset: 2px;">Focused</button>
+      <div style="height: 36px; display: flex; align-items: center; padding: 0 14px; background: #F6F6F4; border: 1px solid rgba(17,17,17,0.12); border-radius: 3px; color: #5A5A5A; font-size: 13px;">Input well — #F6F6F4</div>
+      <button style="font-family: inherit; font-size: 13px; height: 36px; padding: 0 18px; background: #111111; color: #FFFFFF; border: none; border-radius: 999px; cursor: pointer;">Send</button>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>

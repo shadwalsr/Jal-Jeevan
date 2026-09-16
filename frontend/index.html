@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Jal Jeevan</title>
+      <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!--
+      Loaded NON-BLOCKING on purpose. A plain <link rel="stylesheet"> to an
+      external host blocks the browser from painting anything until that
+      request resolves — if fonts.googleapis.com is unreachable (blocked
+      network, bad DNS, a proxy) the whole page can sit on a blank white
+      screen with nothing in the console, because nothing ever throws, it's
+      just waiting. The media="print" trick makes the browser fetch it
+      without blocking render; onload flips it to the real stylesheet once
+      (and if) it arrives. app.css already declares a full fallback stack
+      (-apple-system, Segoe UI, ui-monospace, etc.), so the page is fully
+      usable in the fallback font the whole time either way.
+    -->
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      media="print"
+      onload="this.media='all'"
+    />
+    <noscript>
+      <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      />
+    </noscript>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

@@ -1,0 +1,46 @@
+{
+  "artboards": [
+    {
+      "file": "Main.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1440,
+      "h": 900,
+      "title": "Chart view \u2014 desktop"
+    },
+    {
+      "file": "States.dc.html",
+      "x": 1560,
+      "y": 0,
+      "w": 900,
+      "h": 820,
+      "title": "States and vocabulary"
+    }
+  ],
+  "annotations": [
+    {
+      "id": "one-curve",
+      "x": 480,
+      "y": -190,
+      "w": 500,
+      "text": "The chat bar is the only rounded element on the screen. Everything else is square with a 3px radius, so the curve alone marks the focal point."
+    },
+    {
+      "id": "motion-spec",
+      "x": 0,
+      "y": -190,
+      "w": 440,
+      "text": "Motion, 9s loop:\n0.0s card rises 6px into place\n0.4-2.7s planner nodes advance, 1px rule fills\n3.1-4.5s answer arrives one line at a time, 0.27s apart\nCaret blinks 1.1s, steps(1)\nAll of it off under prefers-reduced-motion"
+    },
+    {
+      "id": "colour-rule",
+      "x": 1560,
+      "y": -190,
+      "w": 460,
+      "text": "Black, white and grey everywhere. Colour appears ONLY for risk and exclusions - that is what makes the risk read louder on white, not quieter."
+    }
+  ],
+  "launch": {
+    "view": "canvas"
+  }
+}

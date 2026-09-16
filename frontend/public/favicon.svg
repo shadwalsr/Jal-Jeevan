@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" fill="none">
+  <defs>
+    <linearGradient id="jj-bg" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0B5FFF"/>
+      <stop offset="1" stop-color="#04B8D6"/>
+    </linearGradient>
+    <linearGradient id="jj-wave" x1="8" y1="46" x2="56" y2="46" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#F4FBFF"/>
+      <stop offset="1" stop-color="#D9F2FF"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Rounded badge, not a hard square — reads cleanly at 16px tab size -->
+  <rect width="64" height="64" rx="16" fill="url(#jj-bg)"/>
+
+  <!-- Compass/safety ring: JalJeev's whole premise is a verified, evidence-
+       backed go/no-go, not a bare weather icon — the ring nods at that
+       without needing text at favicon scale. -->
+  <circle cx="32" cy="26" r="13" fill="none" stroke="#FFFFFF" stroke-opacity="0.55" stroke-width="2"/>
+  <!-- Compass needle pointing to safety -->
+  <path d="M32 17 L36 26 L32 35 L28 26 Z" fill="#FFFFFF"/>
+  <circle cx="32" cy="26" r="2.4" fill="#0B5FFF"/>
+
+  <!-- Twin waves at the base — water, the domain, and motion/voyage -->
+  <path d="M4 46c5-4 11-4 16 0s11 4 16 0 11-4 16 0 11-4 12 0v18H4V46z" fill="url(#jj-wave)"/>
+  <path d="M4 54c5-3.5 11-3.5 16 0s11 3.5 16 0 11-3.5 16 0 11-3.5 12 0v10H4V54z" fill="#FFFFFF" fill-opacity="0.9"/>
+</svg>

@@ -1,0 +1,59 @@
+<resources>
+    <!-- English-only for this build by design.
+         Navigation, actions and every repeated label live here, so a
+         values-hi/, values-ta/ or values-te/ copy of this file translates the
+         app's chrome. Longer explanatory paragraphs inside the Map, Route,
+         Watch and Settings screens are still inline in their composables and
+         need extracting here before a real translation pass - that extraction
+         is the first step of adding a language, not a rewrite. -->
+    <string name="app_name">JalJeev</string>
+
+    <string name="tab_ask">Ask</string>
+    <string name="tab_map">Map</string>
+    <string name="tab_route">Route</string>
+    <string name="tab_watch">Watch</string>
+    <string name="settings">Settings</string>
+    <string name="back">Back</string>
+
+    <string name="chat_hint">Ask about conditions, safety, or where to go</string>
+    <string name="chat_send">Send</string>
+    <string name="chat_new_session">New conversation</string>
+    <string name="chat_empty_title">Ask anything about the water</string>
+    <string name="chat_empty_body">Every answer comes back with an evidence receipt: the sources used, how each risk factor scored, and what data was missing.</string>
+    <string name="chat_use_location">Attach my location to the question</string>
+    <string name="chat_thinking">Working through the agents…</string>
+
+    <string name="evidence_title">Evidence receipt</string>
+    <string name="evidence_why">Why this answer?</string>
+    <string name="evidence_factors">Risk factors</string>
+    <string name="evidence_sources">Sources used</string>
+    <string name="evidence_freshness">Data freshness</string>
+    <string name="evidence_gaps">Data gaps</string>
+    <string name="evidence_rejected">Why not the alternatives</string>
+    <string name="evidence_confidence">Confidence</string>
+    <string name="evidence_validation">Validation</string>
+    <string name="evidence_open_maps">Open in Maps</string>
+    <string name="evidence_show_on_map">Show on map</string>
+    <string name="planner_trace">Planner steps</string>
+
+    <string name="map_check_point">Check this point</string>
+    <string name="map_my_location">My location</string>
+    <string name="map_tap_hint">Tap anywhere on the water to check that point.</string>
+    <string name="map_conditions">Conditions</string>
+
+    <string name="route_range">Search radius</string>
+    <string name="route_find_safest">Safest zone (fast scan)</string>
+    <string name="route_optimize">Optimised route (A*)</string>
+    <string name="route_candidates">Candidates evaluated</string>
+    <string name="route_waypoints">Waypoints</string>
+    <string name="route_origin">Origin</string>
+
+    <string name="monitor_start">Start monitoring</string>
+    <string name="monitor_stop">Stop monitoring</string>
+    <string name="monitor_title">Live safety watch</string>
+
+    <string name="notification_channel_alert_name">Safety alerts</string>
+    <string name="notification_channel_alert_desc">Warnings when conditions where you are turn unsafe</string>
+    <string name="notification_channel_status_name">Monitoring status</string>
+    <string name="notification_channel_status_desc">Ongoing notification while the safety watch is running</string>
+</resources>

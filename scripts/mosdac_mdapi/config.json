@@ -1,0 +1,23 @@
+{
+"user_credentials": {
+        "username/email": "your_username",
+        "password": "your_password"
+},
+
+"search_parameters": {
+        "datasetId": "3RIMG_L2B_SST",
+        "startTime": "2024-01-01",
+        "endTime": "2024-01-01",
+        "count": "",
+        "boundingBox": "",
+        "gId": ""
+},
+
+"download_settings": {
+        "download_path" : "/home/sys_oper/MOSDAC_Downloads/",
+        "organize_by_date": false,
+        "skip_user_input": false,
+        "generate_error_logs": true,
+        "error_logs_dir": ""
+}
+} 

@@ -1,0 +1,286 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap">
+  <style>
+    body { margin: 0; }
+    .ui { font-family: "Public Sans", -apple-system, "Segoe UI", sans-serif; font-size: 14px; line-height: 1.45; color: #111111; }
+    .mono { font-family: "IBM Plex Mono", ui-monospace, "SFMono-Regular", monospace; font-variant-numeric: tabular-nums; }
+    a { color: #111111; } a:hover { color: #5A5A5A; }
+
+    /* ---- Motion. One 9s loop, three beats: card arrives, pipeline runs,
+       answer settles in. No bouncing dots, no shimmer, no pulse — the only
+       moving things are a rule filling and text arriving. ---- */
+    .beat { animation: cardIn 9s ease-out infinite; }
+    @keyframes cardIn {
+      0%   { opacity: 0; transform: translateY(6px); }
+      4%   { opacity: 1; transform: none; }
+      94%  { opacity: 1; transform: none; }
+      100% { opacity: 0; transform: none; }
+    }
+
+    /* Thinking block: visible while the planner runs, gone once it answers. */
+    .thinking { animation: thinkingCycle 9s linear infinite; }
+    @keyframes thinkingCycle {
+      0%, 3%   { opacity: 0; }
+      6%, 30%  { opacity: 1; }
+      34%,100% { opacity: 0; }
+    }
+
+    /* The real planner nodes, each holding for its own slice. */
+    .node { animation: nodeCycle 9s linear infinite; opacity: 0; }
+    .node-2 { animation-name: nodeCycle2; }
+    .node-3 { animation-name: nodeCycle3; }
+    @keyframes nodeCycle  { 0%,5% {opacity:0} 7%,13% {opacity:1} 15%,100% {opacity:0} }
+    @keyframes nodeCycle2 { 0%,14% {opacity:0} 16%,21% {opacity:1} 23%,100% {opacity:0} }
+    @keyframes nodeCycle3 { 0%,22% {opacity:0} 24%,30% {opacity:1} 33%,100% {opacity:0} }
+
+    /* A 1px rule filling left to right — the whole progress affordance. */
+    .fill { animation: fill 9s linear infinite; }
+    @keyframes fill { 0%,4% {width:0} 30% {width:100%} 34%,100% {width:100%} }
+
+    /* Answer arrives a line at a time. Four separate keyframe sets rather than
+       animation-delay, because a delay would drift out of the shared loop. */
+    .ln { opacity: 0; }
+    .ln1 { animation: ln1 9s ease-out infinite; }
+    .ln2 { animation: ln2 9s ease-out infinite; }
+    .ln3 { animation: ln3 9s ease-out infinite; }
+    .ln4 { animation: ln4 9s ease-out infinite; }
+    @keyframes ln1 { 0%,34% {opacity:0; transform:translateY(4px)} 41%,94% {opacity:1; transform:none} 100% {opacity:0} }
+    @keyframes ln2 { 0%,37% {opacity:0; transform:translateY(4px)} 44%,94% {opacity:1; transform:none} 100% {opacity:0} }
+    @keyframes ln3 { 0%,40% {opacity:0; transform:translateY(4px)} 47%,94% {opacity:1; transform:none} 100% {opacity:0} }
+    @keyframes ln4 { 0%,43% {opacity:0; transform:translateY(4px)} 50%,94% {opacity:1; transform:none} 100% {opacity:0} }
+
+    /* Block caret in the input well — the one idle animation on the screen. */
+    .caret { animation: caret 1.1s steps(1) infinite; }
+    @keyframes caret { 0%,50% {opacity:1} 51%,100% {opacity:0} }
+
+    @media (prefers-reduced-motion: reduce) {
+      .beat, .thinking, .node, .fill, .ln1, .ln2, .ln3, .ln4, .caret { animation: none; }
+      .thinking { display: none; }
+      .ln, .caret { opacity: 1; }
+    }
+  </style>
+</helmet>
+
+<div class="ui" style="position: relative; width: 1440px; height: 900px; overflow: hidden; background: #DDE3E4;">
+
+  <!-- ============ MAP BACKGROUND (stands in for MapLibre + CARTO Positron) ============ -->
+  <svg width="1440" height="900" viewBox="0 0 1440 900" style="position: absolute; inset: 0; display: block;">
+    <defs>
+      <pattern id="hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+        <line x1="0" y1="0" x2="0" y2="8" stroke="#C2185B" stroke-width="1.4"></line>
+      </pattern>
+    </defs>
+
+    <rect x="0" y="0" width="1440" height="900" fill="#DDE3E4"></rect>
+
+    <!-- graticule: the chart cue -->
+    <g stroke="#111111" stroke-opacity="0.08" stroke-width="1">
+      <line x1="0" y1="150" x2="1440" y2="150"></line>
+      <line x1="0" y1="330" x2="1440" y2="330"></line>
+      <line x1="0" y1="510" x2="1440" y2="510"></line>
+      <line x1="0" y1="690" x2="1440" y2="690"></line>
+      <line x1="240" y1="0" x2="240" y2="900"></line>
+      <line x1="480" y1="0" x2="480" y2="900"></line>
+      <line x1="720" y1="0" x2="720" y2="900"></line>
+      <line x1="960" y1="0" x2="960" y2="900"></line>
+      <line x1="1200" y1="0" x2="1200" y2="900"></line>
+    </g>
+    <g class="mono" fill="#111111" fill-opacity="0.34" font-size="10" font-family="IBM Plex Mono, monospace">
+      <text x="8" y="146">20.0 N</text>
+      <text x="8" y="326">19.0 N</text>
+      <text x="8" y="506">18.0 N</text>
+      <text x="8" y="686">17.0 N</text>
+      <text x="244" y="892">84.0 E</text>
+      <text x="484" y="892">85.0 E</text>
+      <text x="724" y="892">86.0 E</text>
+      <text x="964" y="892">87.0 E</text>
+      <text x="1204" y="892">88.0 E</text>
+    </g>
+
+    <!-- land: Positron-style near-white -->
+    <path d="M0,0 L720,0 L640,120 L520,235 L400,330 L300,430 L215,540 L150,650 L95,780 L60,900 L0,900 Z" fill="#F4F2EE"></path>
+    <path d="M0,0 L720,0 L640,120 L520,235 L400,330 L300,430 L215,540 L150,650 L95,780 L60,900 L0,900 Z" fill="none" stroke="#111111" stroke-opacity="0.22" stroke-width="1"></path>
+
+    <!-- Indian EEZ: permitted, outline only -->
+    <path d="M1010,0 L940,150 L860,300 L775,450 L700,600 L640,760 L600,900" fill="none" stroke="#3ECFA8" stroke-width="1.5" stroke-opacity="0.9" stroke-dasharray="7 5"></path>
+    <text class="mono" x="1020" y="86" font-size="10" fill="#111111" fill-opacity="0.45" font-family="IBM Plex Mono, monospace">Indian EEZ</text>
+
+    <!-- exclusion zone: hatched, never a solid fill -->
+    <path d="M1160,560 L1440,470 L1440,900 L1080,900 Z" fill="url(#hatch)" fill-opacity="0.6"></path>
+    <path d="M1160,560 L1440,470 L1440,900 L1080,900 Z" fill="none" stroke="#C2185B" stroke-width="2"></path>
+
+    <!-- route: origin, waypoints coloured by risk, destination -->
+    <polyline points="470,300 545,296 620,290 700,286" fill="none" stroke="#111111" stroke-width="1.5" stroke-dasharray="4 4" stroke-opacity="0.65"></polyline>
+    <rect x="465" y="295" width="10" height="10" fill="#3ECFA8" stroke="#FFFFFF" stroke-width="1.5"></rect>
+    <rect x="540" y="291" width="10" height="10" fill="#3ECFA8" stroke="#FFFFFF" stroke-width="1.5"></rect>
+    <rect x="615" y="285" width="10" height="10" fill="#D9C94F" stroke="#FFFFFF" stroke-width="1.5"></rect>
+    <rect x="694" y="280" width="12" height="12" fill="#D9C94F" stroke="#111111" stroke-width="1.5"></rect>
+
+    <!-- ports -->
+    <circle cx="452" cy="311" r="4" fill="#4F8FE0" stroke="#FFFFFF" stroke-width="1.5"></circle>
+    <text class="mono" x="462" y="326" font-size="10" fill="#111111" fill-opacity="0.55" font-family="IBM Plex Mono, monospace">Puri</text>
+    <circle cx="600" cy="150" r="4" fill="#4F8FE0" stroke="#FFFFFF" stroke-width="1.5"></circle>
+    <text class="mono" x="610" y="165" font-size="10" fill="#111111" fill-opacity="0.55" font-family="IBM Plex Mono, monospace">Paradip</text>
+    <circle cx="243" cy="655" r="4" fill="#4F8FE0" stroke="#FFFFFF" stroke-width="1.5"></circle>
+    <text class="mono" x="253" y="670" font-size="10" fill="#111111" fill-opacity="0.55" font-family="IBM Plex Mono, monospace">Visakhapatnam</text>
+  </svg>
+
+  <!-- ============ HEADER STRIP ============ -->
+  <div style="position: absolute; top: 16px; left: 16px; height: 36px; display: flex; align-items: center; gap: 12px; padding: 0 14px; background: #FFFFFF; border: 1px solid rgba(17,17,17,0.12); border-radius: 3px;">
+    <span style="font-weight: 500;">JalJeev</span>
+    <span style="width: 1px; height: 18px; background: rgba(17,17,17,0.12);"></span>
+    <span class="mono" style="font-size: 13px; color: #5A5A5A;">19.7799, 86.0211</span>
+  </div>
+
+  <!-- ============ MONITORING CONTROL ============ -->
+  <div style="position: absolute; top: 16px; right: 392px; display: flex; gap: 8px;">
+    <button style="font-family: inherit; font-size: 13px; height: 36px; padding: 0 14px; background: #FFFFFF; color: #111111; border: 1px solid rgba(17,17,17,0.28); border-radius: 3px; cursor: pointer;">Start monitoring</button>
+    <button style="font-family: inherit; font-size: 13px; height: 36px; padding: 0 14px; background: #FFFFFF; color: #111111; border: 1px solid rgba(17,17,17,0.12); border-radius: 3px; cursor: pointer;">Find safest route</button>
+  </div>
+
+  <!-- ============ MAP LEGEND ============ -->
+  <div style="position: absolute; left: 16px; bottom: 16px; width: 262px; background: #FFFFFF; border: 1px solid rgba(17,17,17,0.12); border-radius: 3px; padding: 12px 14px;">
+    <div style="font-size: 13px; font-weight: 500;">Exclusions</div>
+    <div style="height: 1px; background: rgba(17,17,17,0.12); margin: 8px 0 10px;"></div>
+    <div style="display: flex; flex-direction: column; gap: 8px; font-size: 13px;">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <span style="width: 16px; height: 12px; flex-shrink: 0; border: 1px solid #C2185B; background-image: repeating-linear-gradient(45deg, #C2185B 0, #C2185B 1.4px, transparent 1.4px, transparent 5px);"></span>
+        <span>Foreign EEZ / protected area</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <span style="width: 16px; height: 12px; flex-shrink: 0; border: 1px solid #3ECFA8;"></span>
+        <span>Indian EEZ — permitted</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <span style="width: 10px; height: 10px; flex-shrink: 0; border-radius: 50%; background: #4F8FE0; border: 1.5px solid #FFFFFF; box-sizing: border-box;"></span>
+        <span>Port</span>
+      </div>
+    </div>
+    <div style="height: 1px; background: rgba(17,17,17,0.12); margin: 10px 0;"></div>
+    <div style="font-size: 12px; color: #5A5A5A;">Protected-area coverage is incomplete for Indian marine sanctuaries — Gahirmatha and Bhitarkanika are not present. Absence of a polygon does not prove a location is unrestricted.</div>
+  </div>
+
+  <!-- ============ CHAT: replies above, bar below ============ -->
+  <div style="position: absolute; left: 50%; transform: translateX(-50%); bottom: 24px; width: 680px; display: flex; flex-direction: column; gap: 12px;">
+
+    <div class="beat" style="background: #FFFFFF; border: 1px solid rgba(17,17,17,0.12); border-radius: 3px;">
+      <div style="padding: 14px 16px; display: flex; flex-direction: column; gap: 10px;">
+
+        <div style="font-weight: 500;">Is it safe to fish 20 km east of Puri today?</div>
+        <div style="height: 1px; background: rgba(17,17,17,0.12);"></div>
+
+        <!-- thinking and answer occupy the same grid cell so the card never jumps -->
+        <div style="display: grid; min-height: 132px;">
+
+          <div class="thinking" style="grid-area: 1 / 1; align-self: start; display: flex; flex-direction: column; gap: 10px;">
+            <div style="position: relative; height: 20px;">
+              <div class="mono node"   style="position: absolute; inset: 0; font-size: 13px; color: #5A5A5A;">parse_intent</div>
+              <div class="mono node node-2" style="position: absolute; inset: 0; font-size: 13px; color: #5A5A5A;">resolve_location</div>
+              <div class="mono node node-3" style="position: absolute; inset: 0; font-size: 13px; color: #5A5A5A;">execute_tools &middot; weather &middot; ocean &middot; geo</div>
+            </div>
+            <div style="height: 1px; background: rgba(17,17,17,0.12);">
+              <div class="fill" style="height: 1px; width: 0; background: #111111;"></div>
+            </div>
+          </div>
+
+          <div style="grid-area: 1 / 1; align-self: start; display: flex; flex-direction: column; gap: 10px;">
+            <div class="ln ln1">Conditions 20 km east of Puri are workable for an 8 m boat, but not comfortable. Significant wave height is 1.12 m against your 1.5 m limit, and the wind is 7.4 m/s.</div>
+            <div class="ln ln2">Water depth there is 26 m, well clear of your draft. The point is inside the Indian EEZ and not inside any protected area we hold data for.</div>
+            <div class="ln ln3" style="display: flex; align-items: center; gap: 10px; padding-top: 2px;">
+              <span style="width: 12px; height: 12px; background: #D9C94F; border: 1px solid rgba(17,17,17,0.28);"></span>
+              <span class="mono" style="font-size: 13px;">MODERATE 28/100</span>
+              <span style="width: 1px; height: 14px; background: rgba(17,17,17,0.12);"></span>
+              <span class="mono" style="font-size: 13px; color: #5A5A5A;">19.7799, 86.0211</span>
+            </div>
+            <div class="ln ln4" style="font-size: 13px; color: #5A5A5A; border-top: 1px solid rgba(17,17,17,0.12); padding-top: 10px;">Tide 0.475 m, rising &middot; 5 sources &middot; 3 gaps &middot; <span style="color: #111111; text-decoration: underline; text-underline-offset: 2px;">Evidence</span></div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <div style="height: 52px; display: flex; align-items: center; gap: 10px; padding: 0 8px 0 20px; background: #FFFFFF; border: 1px solid rgba(17,17,17,0.28); border-radius: 999px;">
+      <span style="flex: 1; color: #5A5A5A;">Ask about conditions, safety, or where to go<span class="caret" style="display: inline-block; width: 7px; height: 15px; background: #111111; vertical-align: -2px; margin-left: 2px;"></span></span>
+      <button style="font-family: inherit; font-size: 13px; height: 36px; padding: 0 18px; background: #111111; color: #FFFFFF; border: none; border-radius: 999px; cursor: pointer;">Send</button>
+    </div>
+
+  </div>
+
+  <!-- ============ EVIDENCE PANEL ============ -->
+  <div style="position: absolute; top: 16px; right: 16px; bottom: 16px; width: 360px; background: #FFFFFF; border: 1px solid rgba(17,17,17,0.12); border-radius: 3px; display: flex; flex-direction: column; overflow: hidden;">
+
+    <div style="padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(17,17,17,0.12);">
+      <span style="font-size: 13px; font-weight: 500;">Evidence receipt</span>
+      <span class="mono" style="font-size: 12px; color: #5A5A5A;">d-8f2a41</span>
+    </div>
+
+    <div style="padding: 14px 16px; display: flex; flex-direction: column; gap: 14px;">
+
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <span style="width: 14px; height: 14px; background: #D9C94F; border: 1px solid rgba(17,17,17,0.28);"></span>
+        <span class="mono" style="font-size: 14px;">MODERATE 28/100</span>
+      </div>
+
+      <div>
+        <div style="font-size: 13px; font-weight: 500;">Risk factors</div>
+        <div style="height: 1px; background: rgba(17,17,17,0.12); margin: 6px 0 8px;"></div>
+        <div class="mono" style="font-size: 13px; display: flex; flex-direction: column; gap: 4px;">
+          <div style="display: flex; justify-content: space-between;"><span>wave height 1.12 m</span><span>+12</span></div>
+          <div style="display: flex; justify-content: space-between;"><span>wind 7.4 m/s</span><span>+8</span></div>
+          <div style="display: flex; justify-content: space-between;"><span>distance from port 21.4 km</span><span>+5</span></div>
+          <div style="display: flex; justify-content: space-between;"><span>cross swell</span><span>+3</span></div>
+        </div>
+      </div>
+
+      <div>
+        <div style="font-size: 13px; font-weight: 500;">Data gaps</div>
+        <div style="height: 1px; background: rgba(17,17,17,0.12); margin: 6px 0 8px;"></div>
+        <div style="font-size: 13px; display: flex; flex-direction: column; gap: 4px;">
+          <div>wave height from INCOIS — certificate verification failed</div>
+          <div>cyclone track — IMD not yet available</div>
+          <div>lightning nowcast — no source identified</div>
+        </div>
+      </div>
+
+      <div>
+        <div style="font-size: 13px; font-weight: 500;">Why not the alternatives</div>
+        <div style="height: 1px; background: rgba(17,17,17,0.12); margin: 6px 0 8px;"></div>
+        <div style="font-size: 13px; color: #5A5A5A; display: flex; flex-direction: column; gap: 6px;">
+          <div><span class="mono" style="color: #111111;">19.96, 85.83</span> — on land, not water, per GEBCO bathymetry</div>
+          <div><span class="mono" style="color: #111111;">19.91, 85.97</span> — on land, not water, per GEBCO bathymetry</div>
+        </div>
+      </div>
+
+      <div>
+        <div style="font-size: 13px; font-weight: 500;">Sources</div>
+        <div style="height: 1px; background: rgba(17,17,17,0.12); margin: 6px 0 8px;"></div>
+        <div class="mono" style="font-size: 12px; display: flex; flex-direction: column; gap: 4px; color: #5A5A5A;">
+          <div style="display: flex; justify-content: space-between;"><span style="color: #111111;">Open-Meteo Marine</span><span>14:31Z</span></div>
+          <div style="display: flex; justify-content: space-between;"><span style="color: #111111;">NOAA OISST</span><span>09:00Z</span></div>
+          <div style="display: flex; justify-content: space-between;"><span style="color: #111111;">Copernicus Marine</span><span>13:00Z</span></div>
+          <div style="display: flex; justify-content: space-between;"><span style="color: #111111;">Copernicus BGC</span><span>00:00Z</span></div>
+          <div style="display: flex; justify-content: space-between;"><span style="color: #111111;">EOT20 (pyTMD)</span><span>14:29Z</span></div>
+        </div>
+      </div>
+
+      <div>
+        <div style="font-size: 13px; font-weight: 500;">Confidence</div>
+        <div style="height: 1px; background: rgba(17,17,17,0.12); margin: 6px 0 8px;"></div>
+        <div style="font-size: 13px;">Partial data — 3 of 8 requested variables unavailable. Validation passed.</div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>

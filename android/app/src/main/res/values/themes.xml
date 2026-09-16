@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- All real theming is done in Compose (ui/theme/Theme.kt). This XML
+         theme only sets the window background before the first frame, so the
+         app does not flash white on the way in. -->
+    <style name="Theme.JalJeev" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/window_background</item>
+        <item name="android:statusBarColor">@color/window_background</item>
+        <item name="android:navigationBarColor">@color/window_background</item>
+    </style>
+</resources>

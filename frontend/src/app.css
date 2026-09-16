@@ -1,0 +1,1005 @@
+/* ==========================================================================
+   JalJeev — chart interface
+
+   Reference: a paper nautical chart and a ship's instrument panel. The rules
+   that carry the design, in order of how much they matter:
+
+   1. Colour is reserved ENTIRELY for risk and exclusions. The interface is
+      black, white and grey. That is what makes a MODERATE chip read loudly on
+      a white ground instead of competing with decorative accent colour.
+   2. Every measurement is monospace and tabular. This is the instrument cue;
+      it is applied consistently or not at all.
+   3. Exactly one curved element on the screen — the chat bar. Because it is
+      the only curve, it is the focal point without needing a shadow or a
+      colour to say so.
+   4. Panels are opaque with a single hairline border. No blur, no glass, no
+      layered shadows.
+   ========================================================================== */
+
+:root {
+  --paper: #ffffff;
+  --ink: #111111;
+  --ink-2: #5a5a5a;
+  --rule: rgba(17, 17, 17, 0.12);
+  --rule-heavy: rgba(17, 17, 17, 0.28);
+  --field: #f6f6f4;
+  --radius: 3px;
+  --radius-bar: 999px;
+
+  /* Risk scale — the map fill values. Never restyle these to greyscale. */
+  --risk-low: #3ecfa8;
+  --risk-moderate: #d9c94f;
+  --risk-high: #e3a53d;
+  --risk-extreme: #e3675a;
+  --exclusion: #c2185b;
+  --port: #4f8fe0;
+
+  /* Text-safe darkenings of the same hues — used ONLY for type on white,
+     where the map values do not reach 4.5:1. The chips keep the true value. */
+  --risk-low-ink: #0e7c63;
+  --risk-moderate-ink: #6b6410;
+  --risk-high-ink: #8a5a05;
+  --risk-extreme-ink: #a8342a;
+  --exclusion-ink: #a3145e;
+
+  --ui-font: "Public Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --mono-font: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--ui-font);
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--ink);
+  background: var(--paper);
+  -webkit-font-smoothing: antialiased;
+}
+
+button,
+input {
+  font-family: inherit;
+  font-size: inherit;
+}
+
+/* Numbers line up in columns wherever they appear. */
+.mono {
+  font-family: var(--mono-font);
+  font-variant-numeric: tabular-nums;
+}
+
+:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* --------------------------------------------------------------------------
+   Shell — the map is the page. Nothing scrolls the document itself.
+   -------------------------------------------------------------------------- */
+
+.app-shell {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+}
+
+.map-layer {
+  position: absolute;
+  inset: 0;
+  /* z-index: 0 (not the default `auto`) is what actually matters here — it
+     is what makes this element establish its OWN stacking context. Without
+     it, Leaflet's internal DOM (its control container alone defaults to
+     z-index: 1000, tile/overlay/popup panes are in the 200-700 range) is
+     NOT contained by this element at all: z-index only compares within a
+     single stacking context, and an element with `position` but no explicit
+     z-index doesn't create one, so those high values compete directly
+     against .header-strip / .chat-dock / .top-controls (all z-index: 3)
+     as if they were siblings — and at z-index 1000 they win, covering the
+     rest of the UI completely once Leaflet finishes building its panes.
+     Confirmed live, 28 Aug 2026: the chat dock and header rendered fine
+     immediately after load and then vanished the moment Leaflet's control
+     container was added to the DOM. Explicit z-index: 0 here traps
+     everything Leaflet does inside this element's own context, so it can
+     never climb above the app's own overlay z-index: 3 regardless of what
+     Leaflet's internal numbers are. */
+  z-index: 0;
+}
+
+/* Shared surface for everything floating on the map. */
+.surface {
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+}
+
+/* --------------------------------------------------------------------------
+   Header strip, top-left
+   -------------------------------------------------------------------------- */
+
+.header-strip {
+  position: absolute;
+  top: 16px;
+  /* Centered on the bar, not pinned to a side — the logo is the app's
+     identity, not a piece of chrome competing with the coordinate readout
+     for a corner. left: 50% + translateX(-50%) keeps it centered
+     regardless of content width (the coords are variable-length mono
+     text), which a fixed left/right pair can't do. */
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 3;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 14px;
+}
+
+.header-strip__logo {
+  display: block;
+  border-radius: 6px;
+}
+
+.header-strip__name {
+  font-weight: 500;
+}
+
+.header-strip__divider {
+  width: 1px;
+  height: 18px;
+  background: var(--rule);
+}
+
+.header-strip__coords {
+  font-size: 13px;
+  color: var(--ink-2);
+}
+
+/* --------------------------------------------------------------------------
+   Controls, top-right
+   -------------------------------------------------------------------------- */
+
+.top-controls {
+  position: absolute;
+  /* Was top: 16px, sharing a row with .header-strip. Once the header pill
+     moved to horizontal center (see .header-strip above), that stopped
+     being safe: this row is right-anchored but wide (two 232px cards plus
+     two buttons, ~800px) and its left edge reaches well past the viewport
+     centre on any normal window, so it painted directly over the centred
+     header (later in the DOM, same z-index — it won the overlap outright).
+     Dropping it below the header pill's own height (36px) + a gap removes
+     the collision entirely regardless of how wide either row gets. */
+  top: 64px;
+  z-index: 3;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  transition: right 160ms ease;
+}
+
+.btn {
+  height: 36px;
+  padding: 0 14px;
+  font-size: 13px;
+  color: var(--ink);
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+
+.btn:hover:not(:disabled) {
+  border-color: var(--rule-heavy);
+}
+
+.btn:disabled {
+  color: var(--ink-2);
+  cursor: default;
+}
+
+.btn--primary {
+  border-color: var(--rule-heavy);
+}
+
+/* --------------------------------------------------------------------------
+   Chat dock, bottom-centre
+   Centred on the viewport, not on the space left of the evidence panel: the
+   panel is transient, and centring on the remaining space would make the bar
+   jump sideways every time evidence appears.
+   -------------------------------------------------------------------------- */
+
+.chat-dock {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 24px;
+  z-index: 3;
+  width: min(680px, calc(100vw - 32px));
+}
+
+/* The part that actually slides. .chat-dock only positions and sizes; this
+   is what moves, so the reopen tab (a sibling of .chat-dock in App.tsx) is
+   never affected by the transform. */
+.chat-widget {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: transform 220ms ease, opacity 220ms ease;
+}
+
+.chat-widget--closed {
+  transform: translateY(calc(100% + 16px));
+  opacity: 0;
+  /* Belt and braces alongside the `inert` attribute in ChatPanel.tsx — this
+     stops mouse interaction even if something ever renders it without
+     `inert` support. */
+  pointer-events: none;
+}
+
+.chat-widget__handle-row {
+  display: flex;
+  justify-content: center;
+}
+
+.chat-widget__hide {
+  color: var(--ink-2);
+}
+
+/* Mounted only when the dock is closed (see App.tsx) — a plain fade/rise
+   entrance is enough since, unlike the widget it reopens, there is nothing
+   for it to slide back from. */
+.chat-reopen {
+  position: absolute;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%);
+  z-index: 3;
+  animation: rise-in 220ms ease-out both;
+}
+
+.chat-log {
+  max-height: 44vh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.chat-log__empty {
+  padding: 14px 16px;
+  color: var(--ink-2);
+}
+
+/* Replies are separated by hairlines, not by cards or bubbles. */
+.reply + .reply {
+  border-top: 1px solid var(--rule);
+}
+
+.reply {
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Weight alone distinguishes the question from the answer. No avatars. */
+.reply__question {
+  font-weight: 500;
+}
+
+.reply__answer {
+  white-space: pre-wrap;
+}
+
+.reply__error {
+  color: var(--exclusion-ink);
+}
+
+.reply__meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.reply__footer {
+  font-size: 13px;
+  color: var(--ink-2);
+  border-top: 1px solid var(--rule);
+  padding-top: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.meta-divider {
+  width: 1px;
+  height: 14px;
+  background: var(--rule);
+}
+
+.link-btn {
+  padding: 0;
+  font-size: 13px;
+  color: var(--ink);
+  background: none;
+  border: none;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.link-btn:hover {
+  color: var(--ink-2);
+}
+
+/* --------------------------------------------------------------------------
+   Risk chip — a square colour chip plus a monospace number. Never a pill.
+   -------------------------------------------------------------------------- */
+
+.risk-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--mono-font);
+  font-variant-numeric: tabular-nums;
+  font-size: 13px;
+}
+
+.risk-chip__swatch {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+  border: 1px solid var(--rule-heavy);
+}
+
+.risk-chip--low .risk-chip__swatch { background: var(--risk-low); }
+.risk-chip--moderate .risk-chip__swatch { background: var(--risk-moderate); }
+.risk-chip--high .risk-chip__swatch { background: var(--risk-high); }
+.risk-chip--extreme .risk-chip__swatch { background: var(--risk-extreme); }
+
+/* A veto is not a point on the 0-100 scale, so it never shows a number and
+   never gets a solid chip. Hatch + a rule, matching the map's exclusion
+   language exactly. See risk_agent.py's two-stage pipeline. */
+.risk-veto {
+  border-left: 3px solid var(--exclusion);
+  padding: 2px 0 2px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.risk-veto__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+  color: var(--exclusion-ink);
+}
+
+.risk-veto__swatch {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  border: 1px solid var(--exclusion);
+  background-image: repeating-linear-gradient(
+    45deg,
+    var(--exclusion) 0,
+    var(--exclusion) 1.4px,
+    transparent 1.4px,
+    transparent 5px
+  );
+}
+
+.risk-veto__reasons {
+  font-size: 13px;
+  color: var(--ink-2);
+}
+
+/* --------------------------------------------------------------------------
+   Thinking state
+   The four node names are the planner's FIXED pipeline (graph.py), advanced
+   on elapsed time — not live telemetry, because the trace only comes back
+   with the response. The fill is an elapsed-time estimate and is capped
+   below 100% so it never claims to be finished.
+   -------------------------------------------------------------------------- */
+
+.thinking {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.thinking__node {
+  font-family: var(--mono-font);
+  font-size: 13px;
+  color: var(--ink-2);
+}
+
+.thinking__track {
+  height: 1px;
+  background: var(--rule);
+}
+
+.thinking__fill {
+  height: 1px;
+  background: var(--ink);
+  transition: width 400ms linear;
+}
+
+/* --------------------------------------------------------------------------
+   Chat bar — the one curve
+   -------------------------------------------------------------------------- */
+
+.chat-bar {
+  height: 52px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 8px 0 20px;
+  background: var(--paper);
+  border: 1px solid var(--rule-heavy);
+  border-radius: var(--radius-bar);
+}
+
+.chat-bar__input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--ink);
+}
+
+.chat-bar__input::placeholder {
+  color: var(--ink-2);
+}
+
+.chat-bar__input:focus-visible {
+  outline: none;
+}
+
+/* The bar itself takes the focus ring, so the whole control reads as focused. */
+.chat-bar:focus-within {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+.chat-bar__send {
+  height: 36px;
+  padding: 0 18px;
+  font-size: 13px;
+  color: var(--paper);
+  background: var(--ink);
+  border: none;
+  border-radius: var(--radius-bar);
+  cursor: pointer;
+}
+
+.chat-bar__send:disabled {
+  background: var(--ink-2);
+  cursor: default;
+}
+
+/* --------------------------------------------------------------------------
+   Evidence panel, right edge
+   -------------------------------------------------------------------------- */
+
+.evidence-panel {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  bottom: 16px;
+  z-index: 3;
+  width: 360px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.evidence-panel__head {
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border-bottom: 1px solid var(--rule);
+  flex-shrink: 0;
+}
+
+.evidence-panel__title {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.evidence-panel__id {
+  font-size: 12px;
+  color: var(--ink-2);
+}
+
+.evidence-panel__body {
+  padding: 14px 16px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.evidence-section__title {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* A rule under the heading, spanning the panel — not a boxed card. */
+.evidence-section__rule {
+  height: 1px;
+  background: var(--rule);
+  margin: 6px 0 8px;
+}
+
+.evidence-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+}
+
+.evidence-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.evidence-row--stat {
+  padding: 5px 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.evidence-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+}
+
+/* Data gaps stay visible, never behind a toggle: what the system did not
+   know is part of the answer. */
+.evidence-gaps {
+  color: var(--risk-high-ink);
+}
+
+.evidence-rejected {
+  color: var(--ink-2);
+}
+
+.evidence-empty {
+  padding: 14px 16px;
+  color: var(--ink-2);
+  font-size: 13px;
+}
+
+/* A value the source did not report. Deliberately NOT monospace: it is not a
+   measurement, and it must never be mistaken for one. Never 0, never a dash. */
+.na {
+  font-family: var(--ui-font);
+  color: var(--ink-2);
+}
+
+.evidence-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--mono-font);
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+}
+
+.evidence-table th {
+  text-align: left;
+  font-weight: 500;
+  color: var(--ink-2);
+  padding: 4px 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.evidence-table td {
+  padding: 4px 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.evidence-table td:last-child,
+.evidence-table th:last-child {
+  text-align: right;
+}
+
+.risk-dot {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  margin-right: 6px;
+  border: 1px solid var(--rule-heavy);
+  vertical-align: -1px;
+}
+
+.risk-dot--low { background: var(--risk-low); }
+.risk-dot--moderate { background: var(--risk-moderate); }
+.risk-dot--high { background: var(--risk-high); }
+.risk-dot--extreme { background: var(--risk-extreme); }
+
+/* --------------------------------------------------------------------------
+   Safety monitor — lives in the top-right cluster
+   -------------------------------------------------------------------------- */
+
+.safety-readout {
+  margin-top: 8px;
+  padding: 10px 12px;
+  width: 260px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.safety-readout__row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.safety-readout__warning {
+  border-top: 1px solid var(--rule);
+  padding-top: 8px;
+  color: var(--exclusion-ink);
+}
+
+.safety-readout__warning--uncertain {
+  color: var(--risk-high-ink);
+}
+
+.safety-readout__error {
+  color: var(--exclusion-ink);
+}
+
+/* --------------------------------------------------------------------------
+   Map legend
+   -------------------------------------------------------------------------- */
+
+.map-legend {
+  position: absolute;
+  left: 16px;
+  bottom: 16px;
+  z-index: 2;
+  width: 262px;
+  padding: 12px 14px;
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  font-size: 13px;
+  pointer-events: none;
+}
+
+.map-legend-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink);
+  margin-bottom: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--rule);
+}
+
+.map-legend-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.legend-swatch {
+  width: 16px;
+  height: 12px;
+  flex-shrink: 0;
+}
+
+.legend-hatch {
+  border: 1px solid var(--exclusion);
+  background-image: repeating-linear-gradient(
+    45deg,
+    var(--exclusion) 0,
+    var(--exclusion) 1.4px,
+    transparent 1.4px,
+    transparent 5px
+  );
+}
+
+.legend-permitted {
+  border: 1px solid var(--risk-low);
+  background: transparent;
+}
+
+.legend-port {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--port);
+  border: 1.5px solid var(--paper);
+  outline: 1px solid var(--rule-heavy);
+}
+
+.map-legend-note {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--rule);
+  color: var(--ink-2);
+  font-size: 12px;
+}
+
+.map-legend-clear {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--rule);
+  color: var(--ink-2);
+  font-size: 12px;
+}
+
+/* Leaflet's own chrome, retoned to match — replaces the MapLibre overrides
+   this file used to carry (see MarineMap.tsx for why the map now renders
+   through Leaflet's DOM/SVG pipeline instead of MapLibre's WebGL one). */
+.leaflet-container {
+  font-family: var(--ui-font);
+  background: var(--field, #f6f6f4);
+}
+
+.leaflet-control-zoom {
+  border: 1px solid var(--rule) !important;
+  border-radius: var(--radius) !important;
+  box-shadow: none !important;
+}
+
+.leaflet-control-zoom a {
+  border-radius: 0 !important;
+  color: var(--ink) !important;
+}
+
+.leaflet-control-attribution {
+  font-family: var(--ui-font);
+  font-size: 11px;
+  background: rgba(255, 255, 255, 0.85) !important;
+  border-radius: var(--radius) !important;
+}
+
+.leaflet-popup-content-wrapper {
+  font-family: var(--ui-font);
+  font-size: 13px;
+  border-radius: var(--radius) !important;
+  border: 1px solid var(--rule);
+  box-shadow: none !important;
+}
+
+.leaflet-popup-tip {
+  box-shadow: none !important;
+}
+
+/* --------------------------------------------------------------------------
+   Motion
+   One entrance per element, no loops in the product. A one-shot animation can
+   safely use animation-delay for the stagger — the drift problem only applies
+   to a repeating timeline.
+   -------------------------------------------------------------------------- */
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.reply {
+  animation: rise-in 220ms ease-out both;
+}
+
+/* The parts of an answer arrive in sequence rather than all at once. */
+.reply--assistant > * {
+  animation: rise-in 260ms ease-out both;
+}
+
+.reply--assistant > *:nth-child(1) { animation-delay: 0ms; }
+.reply--assistant > *:nth-child(2) { animation-delay: 70ms; }
+.reply--assistant > *:nth-child(3) { animation-delay: 140ms; }
+.reply--assistant > *:nth-child(4) { animation-delay: 210ms; }
+.reply--assistant > *:nth-child(5) { animation-delay: 280ms; }
+
+@keyframes caret-blink {
+  0%,
+  50% {
+    opacity: 1;
+  }
+  51%,
+  100% {
+    opacity: 0;
+  }
+}
+
+/* steps(1) so it snaps rather than fades — a fading caret reads as a pulse. */
+.caret {
+  display: inline-block;
+  width: 7px;
+  height: 15px;
+  background: var(--ink);
+  vertical-align: -2px;
+  margin-left: 2px;
+  animation: caret-blink 1.1s steps(1) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reply,
+  .reply--assistant > *,
+  .caret {
+    animation: none;
+  }
+  .thinking__fill {
+    transition: none;
+  }
+}
+
+/* Bullets from the answer's Markdown. A hanging indent rather than a marker
+   glyph — quieter, and it keeps the left edge of the text column aligned. */
+.answer-bullet {
+  padding-left: 14px;
+  text-indent: -14px;
+}
+
+.answer-bullet::before {
+  content: "— ";
+  color: var(--ink-2);
+}
+
+/* pre-wrap would preserve the Markdown's own line breaks on top of the ones
+   renderAnswer already creates, doubling the spacing. */
+.reply__answer {
+  white-space: normal;
+}
+
+/* --------------------------------------------------------------------------
+   Vessel selector + passage panel
+   The two controls that make this system answer for sailors and traders as
+   well as fishermen. Both sit in .top-controls as flex children, so they get
+   an explicit width — the flex row would otherwise size them to their widest
+   option string and jump as the selection changes.
+   -------------------------------------------------------------------------- */
+
+.vessel-selector,
+.passage-panel {
+  width: 232px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.vessel-selector__label {
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+
+.vessel-selector__select {
+  height: 32px;
+  width: 100%;
+  padding: 0 8px;
+  font-family: var(--ui-font);
+  font-size: 13px;
+  color: var(--ink);
+  background: var(--field);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+
+.vessel-selector__select:hover {
+  border-color: var(--rule-heavy);
+}
+
+/* The numbers that actually drive the verdict, so a user can see why the
+   same sea came back safe for one hull and rejected for another. */
+.vessel-selector__spec {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  padding-top: 6px;
+  border-top: 1px solid var(--rule);
+}
+
+.vessel-selector__spec-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.vessel-selector__spec-row span:first-child {
+  color: var(--ink-2);
+}
+
+.vessel-selector__sail-note {
+  margin-top: 4px;
+  font-family: var(--ui-font);
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--ink-2);
+}
+
+.vessel-selector__note {
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--ink-2);
+}
+
+.passage-panel__row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.passage-panel__row .vessel-selector__select {
+  flex: 1;
+  min-width: 0;
+}
+
+.passage-panel__hint {
+  font-size: 11px;
+  color: var(--ink-2);
+}
+
+/* Inline leg annotations in the passage table. "no forecast" deliberately
+   reads as a warning rather than a neutral tag — it marks the one thing on
+   the plan the system genuinely does not know. */
+.leg-flag {
+  display: inline-block;
+  margin-left: 5px;
+  padding: 0 4px;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border-radius: var(--radius);
+  border: 1px solid var(--rule);
+  color: var(--ink-2);
+}
+
+.leg-flag--tack {
+  border-color: var(--risk-moderate);
+  color: var(--risk-moderate-ink);
+}
+
+.leg-flag--unforecast {
+  border-color: var(--exclusion);
+  color: var(--exclusion-ink);
+}

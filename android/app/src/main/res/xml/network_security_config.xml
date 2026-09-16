@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  The backend base URL is user-configurable at runtime (Settings screen) so
+  the app can point at a laptop on the same Wi-Fi during a demo. Those are
+  plain-http LAN addresses, which Android blocks by default from API 28 up.
+  Cleartext is allowed here deliberately for that reason. If this is ever
+  deployed against a real hosted API over https, delete this file and the
+  android:networkSecurityConfig attribute in the manifest.
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+</network-security-config>
