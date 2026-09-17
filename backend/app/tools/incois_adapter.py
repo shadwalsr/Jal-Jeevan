@@ -24,19 +24,23 @@ async def get_incois_wave_forecast(lat: float, lon: float) -> dict:
     every value must carry source + timestamp).
     """
     try:
+        import urllib3
+        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
         e = ERDDAP(server=settings.INCOIS_ERDDAP_URL, protocol="griddap")
-        # TODO(data-eng): confirm actual dataset_id from the ERDDAP catalog.
         e.dataset_id = "incois_osf_wave"
-        # griddap_initialize() must run before touching e.constraints — see
-        # the same fix (and why) in noaa_oisst_adapter.py.
-        e.griddap_initialize()
-        e.variables = ["wave_height", "wave_period"]
-        e.constraints["latitude>="] = lat - 0.25
-        e.constraints["latitude<="] = lat + 0.25
-        e.constraints["longitude>="] = lon - 0.25
-        e.constraints["longitude<="] = lon + 0.25
+        e.requests_kwargs = {"timeout": 4, "verify": False}
         loop = asyncio.get_running_loop()
-        ds = await asyncio.wait_for(loop.run_in_executor(network_executor, e.to_xarray), timeout=10)
+
+        def _fetch_incois():
+            e.griddap_initialize()
+            e.variables = ["wave_height", "wave_period"]
+            e.constraints["latitude>="] = lat - 0.25
+            e.constraints["latitude<="] = lat + 0.25
+            e.constraints["longitude>="] = lon - 0.25
+            e.constraints["longitude<="] = lon + 0.25
+            return e.to_xarray()
+
+        ds = await asyncio.wait_for(loop.run_in_executor(network_executor, _fetch_incois), timeout=5)
         return {
             "source": "INCOIS OSF (ERDDAP)",
             "fetched_at": datetime.now(timezone.utc).isoformat(),

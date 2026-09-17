@@ -52,6 +52,10 @@ class ChatViewModel(private val container: AppContainer) : ViewModel() {
         viewModelScope.launch { container.settings.setAttachLocationToChat(enabled) }
     }
 
+    fun dismissLocationWarning() {
+        _state.value = _state.value.copy(locationUnavailable = false)
+    }
+
     /**
      * Starts a fresh backend session. Session id is what lets "and what about
      * tomorrow?" resolve a location the user named three messages ago

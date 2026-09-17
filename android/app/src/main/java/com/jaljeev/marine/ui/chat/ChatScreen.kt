@@ -52,6 +52,15 @@ import com.jaljeev.marine.ui.common.ExpandableSection
 import com.jaljeev.marine.ui.common.LoadingRow
 import com.jaljeev.marine.ui.common.SectionCard
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Navigation
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
+
 private val SUGGESTIONS = listOf(
     "Is it safe to go out 20 km off Visakhapatnam today?",
     "Where is the safest place to fish within 30 km of me?",
@@ -99,13 +108,45 @@ fun ChatScreen(modifier: Modifier = Modifier) {
             }
         }
 
-        if (state.locationUnavailable) {
-            Text(
-                "No position fix available, so this question was sent without your location.",
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.tertiary,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
-            )
+        AnimatedVisibility(visible = state.locationUnavailable) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 4.dp)
+                    .background(
+                        color = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.6f),
+                        shape = RoundedCornerShape(8.dp)
+                    )
+                    .padding(horizontal = 10.dp, vertical = 6.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Row(
+                    modifier = Modifier.weight(1f),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Icon(
+                        Icons.Filled.LocationOff,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.tertiary,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Text(
+                        "No GPS fix available · sent without current location",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onTertiaryContainer,
+                    )
+                }
+                Icon(
+                    Icons.Filled.Close,
+                    contentDescription = "Dismiss",
+                    tint = MaterialTheme.colorScheme.onTertiaryContainer.copy(alpha = 0.7f),
+                    modifier = Modifier
+                        .size(16.dp)
+                        .clickable { vm.dismissLocationWarning() }
+                )
+            }
         }
 
         InputBar(
@@ -158,6 +199,45 @@ private fun EmptyState(onPick: (String) -> Unit) {
 }
 
 @Composable
+fun FormattedMarkdownText(
+    text: String,
+    modifier: Modifier = Modifier,
+    style: androidx.compose.ui.text.TextStyle = MaterialTheme.typography.bodyMedium
+) {
+    val annotatedString = remember(text) {
+        buildAnnotatedString {
+            var i = 0
+            while (i < text.length) {
+                val boldStart = text.indexOf("**", i)
+                if (boldStart != -1) {
+                    append(text.substring(i, boldStart))
+                    val boldEnd = text.indexOf("**", boldStart + 2)
+                    if (boldEnd != -1) {
+                        withStyle(SpanStyle(fontWeight = FontWeight.Bold)) {
+                            append(text.substring(boldStart + 2, boldEnd))
+                        }
+                        i = boldEnd + 2
+                    } else {
+                        append(text.substring(boldStart))
+                        break
+                    }
+                } else {
+                    append(text.substring(i))
+                    break
+                }
+            }
+        }
+    }
+    Text(
+        text = annotatedString,
+        modifier = modifier,
+        style = style,
+        color = MaterialTheme.colorScheme.onSurface,
+        lineHeight = style.lineHeight,
+    )
+}
+
+@Composable
 private fun MessageItem(message: ChatMessage, onShowOnMap: (com.jaljeev.marine.domain.GeoPoint) -> Unit) {
     if (message.fromUser) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
@@ -167,8 +247,8 @@ private fun MessageItem(message: ChatMessage, onShowOnMap: (com.jaljeev.marine.d
                 color = MaterialTheme.colorScheme.onPrimary,
                 modifier = Modifier
                     .widthIn(max = 300.dp)
-                    .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(14.dp))
-                    .padding(horizontal = 14.dp, vertical = 10.dp),
+                    .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(16.dp))
+                    .padding(horizontal = 16.dp, vertical = 10.dp),
             )
         }
         return
@@ -181,9 +261,34 @@ private fun MessageItem(message: ChatMessage, onShowOnMap: (com.jaljeev.marine.d
 
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         SectionCard {
-            Text(message.text, style = MaterialTheme.typography.bodyLarge)
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.padding(bottom = 8.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(24.dp)
+                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.15f), CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        Icons.Filled.Navigation,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(14.dp)
+                    )
+                }
+                Text(
+                    "JalJeev Navigator",
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+            FormattedMarkdownText(message.text, style = MaterialTheme.typography.bodyMedium)
             if (message.trace.isNotEmpty()) {
-                ExpandableSection(stringResource(R.string.planner_trace)) {
+                ExpandableSection("Agent reasoning trace (${message.trace.size} steps)") {
                     com.jaljeev.marine.ui.common.BulletList(message.trace)
                 }
             }
@@ -212,8 +317,8 @@ private fun InputBar(
             Icon(
                 if (attachLocation) Icons.Filled.MyLocation else Icons.Filled.LocationOff,
                 contentDescription = stringResource(R.string.chat_use_location),
-                tint = if (attachLocation) MaterialTheme.colorScheme.secondary
-                else MaterialTheme.colorScheme.onSurfaceVariant,
+                tint = if (attachLocation) MaterialTheme.colorScheme.primary
+                else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
             )
         }
         OutlinedTextField(
@@ -224,7 +329,7 @@ private fun InputBar(
             maxLines = 4,
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
             keyboardActions = KeyboardActions(onSend = { if (enabled) onSend() }),
-            shape = RoundedCornerShape(14.dp),
+            shape = RoundedCornerShape(20.dp),
         )
         IconButton(onClick = onSend, enabled = enabled && value.isNotBlank()) {
             Icon(
@@ -232,7 +337,7 @@ private fun InputBar(
                 contentDescription = stringResource(R.string.chat_send),
                 modifier = Modifier.size(24.dp),
                 tint = if (enabled && value.isNotBlank()) MaterialTheme.colorScheme.primary
-                else MaterialTheme.colorScheme.onSurfaceVariant,
+                else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
             )
         }
     }

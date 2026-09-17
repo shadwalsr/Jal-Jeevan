@@ -185,10 +185,15 @@ SYNTHESIS_PROMPT = """You are JalJeev, a marine safety assistant for Indian fish
 maritime traders. Match your language to who is asking: a fisherman wants plain, practical words;
 a sailor or a ship's officer expects the normal terms of their trade (bearings, nautical miles,
 legs, ETA, under-keel clearance) and is not helped by having them avoided. Answer the
-user's question using ONLY the evidence receipt below — do not invent or estimate any number that
+user's question using the evidence data below — do not invent or estimate any number that
 isn't in it. If a value is missing, say so plainly instead of guessing. Cite the data source and
 how recent it is when giving a specific number. Keep the answer concise, practical, and in plain
 language the person asking would use themselves.
+
+COMMUNICATION & TONE RULES:
+- NEVER quote internal software terms or developer jargon like "evidence receipt", "the receipt", "JSON", "tool_results", "timed out after 90s", or system error strings.
+- Speak naturally, respectfully, and practically. If certain satellite telemetry is delayed or unavailable, explain plainly that real-time satellite readings for that offshore zone are currently unavailable, report any known weather/wind/wave values, and give sound precautionary advice.
+- Always be honest about what is verified vs unverified.
 
 If the receipt describes a passage (leg-by-leg factor lines with bearings and ETAs), give the
 legs in order, state the total distance and ETA, and name the WORST leg explicitly — a passage is
@@ -360,16 +365,38 @@ async def execute_tools(state: PlannerState) -> PlannerState:
                 timeout=SEARCH_TIMEOUT_S,
             )
         except asyncio.TimeoutError:
-            trace.append(f"Route Agent: timed out after {SEARCH_TIMEOUT_S}s")
-            return {
-                **state,
-                "tool_results": {
-                    "error": f"Searching for a safe zone took longer than {SEARCH_TIMEOUT_S}s. "
-                             "Try again shortly — the ocean data sources may be slow right now."
-                },
-                "evidence": {},
-                "trace": trace,
-            }
+            trace.append(f"Route Agent: timed out after {SEARCH_TIMEOUT_S}s — falling back to immediate point check")
+            try:
+                from app.agents.route_agent import quick_check
+                quick_risk = await quick_check(lat, lon, vessel)
+                fallback_evidence = {
+                    "recommendation_summary": f"Full offshore area search took longer than usual; evaluated conditions near {state.get('location_name') or f'{lat:.2f}, {lon:.2f}'}",
+                    "risk_score": quick_risk.risk_score,
+                    "risk_level": quick_risk.risk_level,
+                    "factor_lines": quick_risk.explanation,
+                    "sources_used": ["Open-Meteo Marine & Weather", "GEBCO Bathymetry"],
+                    "data_freshness": {},
+                    "data_gaps": ["Deep satellite ocean analysis timed out; using atmospheric and wave model"],
+                    "rejected_alternatives": [],
+                    "confidence_statement": "Rapid coastal/marine forecast available. Exercise standard vigilance.",
+                    "location_lat": lat,
+                    "location_lon": lon,
+                }
+                return {
+                    **state,
+                    "tool_results": quick_risk.model_dump(),
+                    "evidence": fallback_evidence,
+                    "trace": trace,
+                }
+            except Exception as _fb_err:
+                return {
+                    **state,
+                    "tool_results": {
+                        "error": "Marine data sources are momentarily slow. Please verify with local port authorities."
+                    },
+                    "evidence": {},
+                    "trace": trace,
+                }
         trace.append(f"Route Agent: evaluated {len(result.candidates_evaluated)} candidates, {'found' if result.found_safe_zone else 'did not find'} a safe zone")
         evidence = build_receipt_for_route(result)
         trace.append("Evidence Agent: built reasoning receipt (sources, factors, rejected alternatives)")

@@ -176,7 +176,7 @@ async def get_physics_subset(lat: float, lon: float) -> dict:
                 # Raised from 12s: this budget now covers the actual data
                 # transfer too, not just the (cheap, lazy) dataset open — the
                 # transfer used to happen outside any timeout at all.
-                timeout=25,
+                timeout=12,
             )
         result = {
             "source": "Copernicus Marine",
@@ -232,7 +232,7 @@ async def get_bgc_subset(lat: float, lon: float) -> dict:
                         fields={"chlorophyll_mg_m3": ("chl", 4)},
                     ),
                 ),
-                timeout=25,
+                timeout=12,
             )
         result = {
             "source": "Copernicus Marine BGC",

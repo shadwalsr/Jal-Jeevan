@@ -37,3 +37,33 @@ network_executor = ThreadPoolExecutor(max_workers=16, thread_name_prefix="jaljee
 # PostGIS lookups, Redis) is untouched and still fully parallel. A crashed
 # server is not a faster server.
 netcdf_lock = threading.Lock()
+
+# Patch erddapy's low-level urlopen to enforce a 3.5s timeout and SSL bypass
+# for public ERDDAP endpoints (NOAA, INCOIS) that otherwise block for 60s
+# on unresponsive servers or fail SSL validation on Windows.
+try:
+    import io
+    import requests
+    import urllib3
+    import erddapy.core.url as _erddapy_url
+
+    urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+    _orig_urlopen = _erddapy_url._urlopen
+
+    def _safe_erddapy_urlopen(url: str, auth=None, **kwargs):
+        timeout = kwargs.pop("timeout", 3.5)
+        verify = kwargs.pop("verify", False)
+        response = requests.get(
+            url,
+            allow_redirects=True,
+            auth=auth,
+            timeout=timeout,
+            verify=verify,
+            **kwargs,
+        )
+        response.raise_for_status()
+        return io.BytesIO(response.content)
+
+    _erddapy_url._urlopen = _safe_erddapy_urlopen
+except Exception as _patch_err:
+    pass
