@@ -57,9 +57,22 @@ app.include_router(map_router)
 app.include_router(speech_router)
 
 
+@app.get("/")
+async def root():
+    return {
+        "status": "online",
+        "service": "JalJeev API",
+        "description": "Agentic Marine Intelligence System — SIH26176",
+        "version": "0.1.0",
+        "health": "/health",
+        "docs": "/docs",
+    }
+
+
 @app.get("/health")
 async def health():
     return {"status": "ok", "env": settings.ENV}
+
 
 
 @app.get("/debug/incois/wave")
