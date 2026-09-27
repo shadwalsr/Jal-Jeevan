@@ -64,7 +64,8 @@ async def get_marine_forecast(lat: float, lon: float, hour_offset: int = 0) -> d
                     "hourly": (
                         "wave_height,wave_period,wave_direction,"
                         "swell_wave_height,swell_wave_period,swell_wave_direction,"
-                        "wind_wave_height,wind_wave_period,wind_wave_direction"
+                        "wind_wave_height,wind_wave_period,wind_wave_direction,"
+                        "wind_speed_10m,wind_direction_10m,wind_gusts_10m"
                     ),
                     "timezone": "auto",
                 },
@@ -84,6 +85,9 @@ async def get_marine_forecast(lat: float, lon: float, hour_offset: int = 0) -> d
             "swell_direction_deg": _at(hourly.get("swell_wave_direction"), idx),
             "wind_wave_height_m": _at(hourly.get("wind_wave_height"), idx),
             "wind_wave_direction_deg": _at(hourly.get("wind_wave_direction"), idx),
+            "wind_speed_ms": _kmh_to_ms(_at(hourly.get("wind_speed_10m"), idx)),
+            "wind_gust_ms": _kmh_to_ms(_at(hourly.get("wind_gusts_10m"), idx)),
+            "wind_direction_deg": _at(hourly.get("wind_direction_10m"), idx),
             "valid_time": _at(hourly.get("time"), idx),
         }
         if hour_offset == 0:

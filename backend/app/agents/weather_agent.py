@@ -48,8 +48,19 @@ async def run_weather_agent(lat: float, lon: float) -> WeatherState:
             visibility = om_result.get("visibility_m")
             sources_used.append("Open-Meteo Forecast")
             freshness["Open-Meteo Forecast"] = om_result.get("fetched_at", "")
-        else:
-            missing.append("wind/precipitation (both IMD and Open-Meteo failed)")
+
+    # Marine wind fallback: if IMD & Open-Meteo Forecast both failed, Open-Meteo Marine carries wind
+    if wind_speed is None:
+        om_marine = await open_meteo_adapter.get_marine_forecast(lat, lon)
+        if om_marine.get("status") == "success" and om_marine.get("wind_speed_ms") is not None:
+            wind_speed = om_marine.get("wind_speed_ms")
+            wind_gust = om_marine.get("wind_gust_ms")
+            wind_dir = om_marine.get("wind_direction_deg")
+            sources_used.append("Open-Meteo Marine (Wind)")
+            freshness["Open-Meteo Marine (Wind)"] = om_marine.get("fetched_at", "")
+
+    if wind_speed is None:
+        missing.append("wind/precipitation (both IMD and Open-Meteo failed)")
 
     if pressure is None:
         missing.append("pressure trend (source did not report it)")
