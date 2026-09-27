@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { getQuickCheck, type QuickCheckResult } from "./api";
+import { useLanguage } from "./i18n/LanguageContext";
 
 // Live guide feature: "nothing is sure about when the parameters might
 // change and it might put the user in danger" — once started, this polls
@@ -27,6 +28,7 @@ function reasonText(r: QuickCheckResult): string {
 }
 
 export default function SafetyMonitor() {
+  const { t } = useLanguage();
   const [status, setStatus] = useState<MonitorStatus>("idle");
   const [result, setResult] = useState<QuickCheckResult | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -121,7 +123,7 @@ export default function SafetyMonitor() {
         className={`btn${status === "watching" ? " btn--primary" : ""}`}
         onClick={status === "watching" || status === "error" ? stop : start}
       >
-        {status === "watching" || status === "error" ? "Stop monitoring" : "Start monitoring"}
+        {status === "watching" || status === "error" ? t("stop_monitoring") : t("start_monitoring")}
       </button>
 
       {(status === "watching" || errorMsg) && (

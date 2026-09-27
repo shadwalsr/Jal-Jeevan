@@ -11,6 +11,8 @@ import {
   type OptimizedRoute,
   type PassagePlan,
 } from "./api";
+import { LanguageProvider, useLanguage } from "./i18n/LanguageContext";
+import { LanguageSelector } from "./LanguageSelector";
 import "./app.css";
 
 // Verified real demo point — 15km offshore Visakhapatnam. Puri's exact
@@ -21,7 +23,8 @@ const DEFAULT_LON = 83.35;
 
 type LocationStatus = "requesting" | "granted" | "denied" | "unsupported";
 
-export default function App() {
+function AppContent() {
+  const { t } = useLanguage();
   const [lat, setLat] = useState(DEFAULT_LAT);
   const [lon, setLon] = useState(DEFAULT_LON);
   const [route, setRoute] = useState<OptimizedRoute | null>(null);
@@ -113,40 +116,44 @@ export default function App() {
 
       <div className="header-strip surface">
         <img className="header-strip__logo" src="/logo-mark.svg" alt="" width={24} height={24} />
-        <span className="header-strip__name">Jal Jeevan</span>
+        <span className="header-strip__name">{t("app_name")}</span>
         <span className="header-strip__divider" />
         <span className="header-strip__coords mono">
           {lat.toFixed(4)}, {lon.toFixed(4)}
         </span>
+        <span className="header-strip__divider" />
+        <LanguageSelector />
       </div>
 
       {/* Slides clear of the evidence panel when it is present. */}
       <div className="top-controls" style={{ right: hasEvidence ? 392 : 16 }}>
-        <div>
-          <button className="btn" onClick={handleFindRoute} disabled={routeLoading}>
-            {routeLoading ? "Routing…" : "Find safest route"}
+        <div className="top-controls__row">
+          <button className="btn btn--primary" onClick={handleFindRoute} disabled={routeLoading}>
+            {routeLoading ? t("routing") : t("find_safest_route")}
           </button>
-          {routeError && (
-            <div className="safety-readout surface safety-readout__error">{routeError}</div>
-          )}
+          <SafetyMonitor />
         </div>
+        {routeError && (
+          <div className="safety-readout surface safety-readout__error">{routeError}</div>
+        )}
         {/* Changing the vessel invalidates any result on screen: the same
             water produces a genuinely different verdict for a different
             hull, so keeping the old path visible would misattribute it. */}
-        <VesselSelector
-          value={vesselClass}
-          onChange={(next) => {
-            setVesselClass(next);
-            setRoute(null);
-            setPassage(null);
-          }}
-        />
-        <PassagePanel
-          planning={passageLoading}
-          onPlan={handlePlanPassage}
-          error={passageError}
-        />
-        <SafetyMonitor />
+        <div className="top-controls__panels">
+          <VesselSelector
+            value={vesselClass}
+            onChange={(next) => {
+              setVesselClass(next);
+              setRoute(null);
+              setPassage(null);
+            }}
+          />
+          <PassagePanel
+            planning={passageLoading}
+            onPlan={handlePlanPassage}
+            error={passageError}
+          />
+        </div>
       </div>
 
       <div className="chat-dock">
@@ -169,11 +176,19 @@ export default function App() {
           reopens does its own slide-up). */}
       {!chatOpen && (
         <button className="btn chat-reopen surface" onClick={() => setChatOpen(true)}>
-          Show chat
+          {t("show_chat")}
         </button>
       )}
 
       {hasEvidence && <EvidencePanel route={route} passage={passage} />}
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <LanguageProvider>
+      <AppContent />
+    </LanguageProvider>
   );
 }

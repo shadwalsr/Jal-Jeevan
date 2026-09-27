@@ -56,4 +56,14 @@
     <string name="notification_channel_alert_desc">Warnings when conditions where you are turn unsafe</string>
     <string name="notification_channel_status_name">Monitoring status</string>
     <string name="notification_channel_status_desc">Ongoing notification while the safety watch is running</string>
+
+    <string name="language_select">Select language</string>
+    <string name="language_title">Language / भाषा</string>
+    <string name="language_desc">Choose your preferred regional coastal language</string>
+    <string name="language_saved">Language updated</string>
+    <string name="reasoning">Reasoning</string>
+    <string name="hide_reasoning">Hide reasoning</string>
+    <string name="vetoed_title">Not permitted — do not go</string>
+    <string name="sources_label">sources</string>
+    <string name="gaps_label">gaps</string>
 </resources>

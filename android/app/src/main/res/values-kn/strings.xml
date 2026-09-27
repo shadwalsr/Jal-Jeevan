@@ -1,0 +1,62 @@
+<resources>
+    <string name="app_name">ಜಲ ಜೀವನ</string>
+
+    <string name="tab_ask">ಕೇಳಿ</string>
+    <string name="tab_map">ನಕ್ಷೆ</string>
+    <string name="tab_route">ಮಾರ್ಗ</string>
+    <string name="tab_watch">ರಕ್ಷಣೆ</string>
+    <string name="settings">ಸೆಟ್ಟಿಂಗ್ಸ್</string>
+    <string name="back">ಹಿಂದೆ</string>
+
+    <string name="chat_hint">ಸಮುದ್ರ ಸ್ಥಿತಿ, ಸುರಕ್ಷತೆ ಅಥವಾ ಎಲ್ಲಿಗೆ ಹೋಗಬೇಕೆಂದು ಕೇಳಿ</string>
+    <string name="chat_send">ಕಳುಹಿಸಿ</string>
+    <string name="chat_new_session">ಹೊಸ ಸಂಭಾಷಣೆ</string>
+    <string name="chat_empty_title">ಸಮುದ್ರದ ಬಗ್ಗೆ ಯಾವುದೇ ಪ್ರಶ್ನೆ ಕೇಳಿ</string>
+    <string name="chat_empty_body">ಪ್ರತಿ ಉತ್ತರವೂ ಸಾಕ್ಷ್ಯ ರಶೀದಿಯೊಂದಿಗೆ ಬರುತ್ತದೆ: ಬಳಸಿದ ಮೂಲಗಳು, ಅಪಾಯದ ಅಂಕ ಮತ್ತು ಮಾಹಿತಿ ಕೊರತೆ.</string>
+    <string name="chat_use_location">ಪ್ರಶ್ನೆಗೆ ನನ್ನ ಸ್ಥಳವನ್ನು ಲಗತ್ತಿಸಿ</string>
+    <string name="chat_thinking">ಸಮುದ್ರ ಮಾಹಿತಿ ವಿಶ್ಲೇಷಿಸಲಾಗುತ್ತಿದೆ…</string>
+
+    <string name="evidence_title">ಸಾಕ್ಷ್ಯ ರಸೀದಿ</string>
+    <string name="evidence_why">ಈ ಉತ್ತರ ಏಕೆ?</string>
+    <string name="evidence_factors">ಅಪಾಯದ ಅಂಶಗಳು</string>
+    <string name="evidence_sources">ಬಳಸಿದ ಮೂಲಗಳು</string>
+    <string name="evidence_freshness">ಮಾಹಿತಿ ತಾಜಾತನ</string>
+    <string name="evidence_gaps">ಮಾಹಿತಿ ಕೊರತೆ</string>
+    <string name="evidence_rejected">ಪರ್ಯಾಯಗಳನ್ನು ಏಕೆ ತಿರಸ್ಕರಿಸಲಾಗಿದೆ</string>
+    <string name="evidence_confidence">ವಿಶ್ವಾಸಾರ್ಹತೆ</string>
+    <string name="evidence_validation">ಪರಿಶೀಲನೆ</string>
+    <string name="evidence_open_maps">ನಕ್ಷೆಯಲ್ಲಿ ತೆರೆಯಿರಿ</string>
+    <string name="evidence_show_on_map">ನಕ್ಷೆಯಲ್ಲಿ ತೋರಿಸಿ</string>
+    <string name="planner_trace">ಯೋಜನಾ ಹಂತಗಳು</string>
+
+    <string name="map_check_point">ಈ ಬಿಂದುವನ್ನು ಪರೀಕ್ಷಿಸಿ</string>
+    <string name="map_my_location">ನನ್ನ ಸ್ಥಳ</string>
+    <string name="map_tap_hint">ಸ್ಥಿತಿ ತಿಳಿಯಲು ನೀರಿನ ಮೇಲೆ ಎಲ್ಲಿಯಾದರೂ ಸ್ಪರ್ಶಿಸಿ.</string>
+    <string name="map_conditions">ಸಮುದ್ರ ಸ್ಥಿತಿ</string>
+
+    <string name="route_range">ಹುಡುಕಾಟದ ತ್ರಿಜ್ಯ</string>
+    <string name="route_find_safest">ಸುರಕ್ಷಿತ ವಲಯ (ತ್ವರಿತ ಸ್ಕ್ಯಾನ್)</string>
+    <string name="route_optimize">ಆಪ್ಟಿಮೈಸ್ಡ್ ಮಾರ್ಗ (A*)</string>
+    <string name="route_candidates">ಮೌಲ್ಯಮಾಪನ ಮಾಡಿದ ಮಾರ್ಗಗಳು</string>
+    <string name="route_waypoints">ವೇಪಾಯಿಂಟ್‌ಗಳು</string>
+    <string name="route_origin">ಪ್ರಾರಂಭದ ಬಿಂದು</string>
+
+    <string name="monitor_start">ಮೇಲ್ವಿಚಾರಣೆ ಪ್ರಾರಂಭಿಸಿ</string>
+    <string name="monitor_stop">ಮೇಲ್ವಿಚಾರಣೆ ನಿಲ್ಲಿಸಿ</string>
+    <string name="monitor_title">ಲೈವ್ ಸುರಕ್ಷತಾ ವೀಕ್ಷಣೆ</string>
+
+    <string name="notification_channel_alert_name">ಸುರಕ್ಷತಾ ಎಚ್ಚರಿಕೆಗಳು</string>
+    <string name="notification_channel_alert_desc">ಸಮುದ್ರ ಅಪಾಯಕಾರಿಯಾದಾಗ ಬರುವ ಎಚ್ಚರಿಕೆಗಳು</string>
+    <string name="notification_channel_status_name">ಮೇಲ್ವಿಚಾರಣೆ ಸ್ಥಿತಿ</string>
+    <string name="notification_channel_status_desc">ಸುರಕ್ಷತಾ ವೀಕ್ಷಣೆ ಚಾಲನೆಯಲ್ಲಿರುವಾಗ ಸೂಚನೆ</string>
+
+    <string name="language_select">ಭಾಷೆ ಆಯ್ಕೆಮಾಡಿ</string>
+    <string name="language_title">ಭಾಷೆ / Language</string>
+    <string name="language_desc">ನಿಮ್ಮ ಕರಾವಳಿ ಪ್ರಾದೇಶಿಕ ಭಾಷೆಯನ್ನು ಆಯ್ಕೆಮಾಡಿ</string>
+    <string name="language_saved">ಭಾಷೆ ಬದಲಾಯಿಸಲಾಗಿದೆ</string>
+    <string name="reasoning">ಕಾರಣಗಳನ್ನು ನೋಡಿ</string>
+    <string name="hide_reasoning">ಕಾರಣಗಳನ್ನು ಮರೆಮಾಡಿ</string>
+    <string name="vetoed_title">ಅನುಮತಿಯಿಲ್ಲ — ಸಮುದ್ರಕ್ಕೆ ಇಳಿಯಬೇಡಿ</string>
+    <string name="sources_label">ಮೂಲಗಳು</string>
+    <string name="gaps_label">ಕೊರತೆಗಳು</string>
+</resources>

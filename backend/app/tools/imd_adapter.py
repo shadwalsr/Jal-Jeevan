@@ -27,7 +27,7 @@ async def get_imd_current_weather(lat: float, lon: float) -> dict:
             "reason": "IMD_API_KEY not configured (registration pending)",
         }
     try:
-        async with httpx.AsyncClient(timeout=10) as client:
+        async with httpx.AsyncClient(timeout=60.0) as client:
             resp = await client.get(
                 f"{IMD_BASE_URL}/weather",
                 params={"lat": lat, "lon": lon, "key": settings.IMD_API_KEY},

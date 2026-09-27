@@ -16,8 +16,9 @@ class Settings(BaseSettings):
     SECRET_KEY: str = "dev"
     LOG_LEVEL: str = "INFO"
 
-    DATABASE_URL: str
-    REDIS_URL: str
+    DATABASE_URL: str = "postgresql+asyncpg://jaljeev:jaljeev_dev_password@localhost:5433/jaljeev"
+    REDIS_URL: str = "redis://localhost:6379/0"
+    CORS_ORIGINS: str = "*"
 
     S3_ENDPOINT: str = "http://minio:9000"
     S3_ACCESS_KEY: str = "jaljeev"
@@ -42,6 +43,7 @@ class Settings(BaseSettings):
     EARTHDATA_TOKEN: str | None = None
     PROTECTED_PLANET_API_KEY: str | None = None
     GFW_API_TOKEN: str | None = None
+    SARVAM_API_KEY: str | None = "sk_rlsmpryc_39CSSgULU6lMuom7Lkt8MvbI"
 
     # Public / no-auth endpoints (safe defaults, overridable)
     INCOIS_ERDDAP_URL: str = "https://erddap.incois.gov.in/erddap"

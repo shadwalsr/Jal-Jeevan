@@ -71,7 +71,7 @@ _NUDGE_OFFSETS_DEG = [
 # background job and all 9 offsets x N would pile into network_executor's
 # 16 worker slots — the exact pool-starvation failure _executor.py warns
 # about. One computation per point at a time.
-_in_flight: set[str] = set()
+_in_flight_tasks: dict[str, asyncio.Task] = {}
 _in_flight_lock = asyncio.Lock()
 
 
@@ -177,29 +177,22 @@ async def _compute_and_cache(lat: float, lon: float) -> dict | None:
     key = _point_key(lat, lon)
     try:
         loop = asyncio.get_running_loop()
-        series = await asyncio.wait_for(
-            loop.run_in_executor(network_executor, _compute_series_sync, lat, lon), timeout=180
-        )
-        # asyncio.shield: this task is deliberately independent of whatever
-        # request triggered it, but shield the write anyway so a cancelled
-        # loop shutdown cannot discard ~30s of completed work — losing the
-        # write is what made the old implementation never populate its cache.
-        await asyncio.shield(cache_set("tide", lat, lon, series))
+        series = await loop.run_in_executor(network_executor, _compute_series_sync, lat, lon)
+        if series:
+            await asyncio.shield(cache_set("tide", lat, lon, series))
         return series
     except Exception as exc:
         print(f"[tide_adapter] background series computation failed: {type(exc).__name__}: {exc}")
         return None
     finally:
         async with _in_flight_lock:
-            _in_flight.discard(key)
+            _in_flight_tasks.pop(key, None)
 
 
 async def get_tide(lat: float, lon: float) -> dict:
     """
-    Never blocks. Returns a real prediction when one is cached for this
-    point, otherwise reports honestly that it is being computed and returns
-    immediately — a request must not wait ~30s for astronomy that will be
-    identical whenever it is calculated.
+    Returns a real prediction when one is cached, or computes and caches it.
+    Multiple callers for the same point share the single in-flight computation.
     """
     if not TIDE_MODEL_DIR.exists() or not any(TIDE_MODEL_DIR.rglob("*.nc*")):
         return {
@@ -213,36 +206,34 @@ async def get_tide(lat: float, lon: float) -> dict:
         reading = _read_now(cached)
         if reading is not None:
             return reading
-        # Series exists but "now" has walked off the end of it — fall through
-        # and recompute rather than extrapolating.
 
     key = _point_key(lat, lon)
     async with _in_flight_lock:
-        already_running = key in _in_flight
-        if not already_running:
-            _in_flight.add(key)
+        if key in _in_flight_tasks:
+            task = _in_flight_tasks[key]
+        else:
+            task = asyncio.create_task(_compute_and_cache(lat, lon))
+            _in_flight_tasks[key] = task
 
-    if not already_running:
-        asyncio.create_task(_compute_and_cache(lat, lon))
+    try:
+        series = await task
+        if series is not None and "heights_m" in series:
+            reading = _read_now(series)
+            if reading is not None:
+                return reading
+    except Exception as exc:
+        print(f"[tide_adapter] error awaiting tide computation: {exc}")
 
     return {
         "source": "EOT20 (pyTMD)",
-        "status": "computing",
-        "reason": (
-            "EOT20 harmonic prediction for this point is being computed in the background "
-            "(~30s, cached for 12h afterwards). Tide is not included in this response."
-        ),
+        "status": "unavailable",
+        "reason": "Could not compute EOT20 tide prediction near coordinates",
     }
 
 
 async def prewarm_tide(lat: float, lon: float, timeout_s: int = 200) -> dict:
     """
-    Blocking variant for scripts/prewarm_demo.py and background refresh jobs
-    ONLY — never call this from a request path. Waits for the real
-    computation so a demo starts with the cache already populated.
+    Ensure the tide is computed and cached for (lat, lon).
     """
-    cached = await cache_get("tide", lat, lon)
-    if cached is not None and "heights_m" in cached and _read_now(cached) is not None:
-        return {"status": "success", "reason": "already cached"}
-    series = await asyncio.wait_for(_compute_and_cache(lat, lon), timeout=timeout_s)
-    return {"status": "success" if series else "failed"}
+    reading = await get_tide(lat, lon)
+    return {"status": "success" if reading.get("status") == "success" else "failed"}

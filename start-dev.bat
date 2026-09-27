@@ -113,7 +113,7 @@ echo        clear
 
 REM ---------- 4. backend ----------
 echo  [4/5] Backend  ^(uvicorn on %BIND%:8000^)...
-start "JalJeev backend" cmd /k "cd /d "%~dp0backend" && .venv\Scripts\python.exe -m uvicorn app.main:app --host %BIND% --port 8000"
+start "JalJeev backend" cmd /k "cd /d "%~dp0backend" && .venv\Scripts\python.exe -m uvicorn app.main:app --host %BIND% --port 8000 --reload"
 
 set "APIREADY="
 for /l %%i in (1,1,45) do (

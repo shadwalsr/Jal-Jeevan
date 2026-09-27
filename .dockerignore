@@ -1,0 +1,10 @@
+.git
+.venv
+backend/.venv
+backend/tests
+frontend/node_modules
+frontend/dist
+android/
+docs/
+*.log
+*.err.log

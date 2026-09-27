@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
@@ -44,46 +45,49 @@ fun EvidenceCard(
     val context = LocalContext.current
     val level = RiskLevel.from(evidence.riskLevel)
 
-    SectionCard(title = stringResource(R.string.evidence_title), modifier = modifier) {
-
+    SectionCard(
+        title = stringResource(R.string.evidence_title),
+        modifier = modifier,
+    ) {
         if (evidence.riskLevel != null) {
             RiskBadge(level = level, score = evidence.riskScore)
         }
 
         if (evidence.recommendationSummary.isNotBlank()) {
-            Text(evidence.recommendationSummary, style = MaterialTheme.typography.bodyMedium)
+            Text(
+                evidence.recommendationSummary,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
         }
 
         if (evidence.factorLines.isNotEmpty()) {
             Text(
-                stringResource(R.string.evidence_factors),
-                style = MaterialTheme.typography.labelMedium,
+                stringResource(R.string.evidence_factors).uppercase(),
+                style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-            BulletList(evidence.factorLines)
+            BulletList(evidence.factorLines, isMonospace = true)
         } else if (level.isVeto) {
-            // Empty factor_breakdown on a REJECTED result is correct, not a
-            // missing field: Stage 1 vetoed it before scoring ran.
             Text(
-                "Vetoed by a hard constraint, so no risk score was computed - " +
-                    "scoring only runs on candidates that pass the legal and survivability checks.",
+                "Vetoed by a hard constraint, so no risk score was computed — scoring only runs on candidates that pass legal and survivability checks.",
                 style = MaterialTheme.typography.bodyMedium,
-                color = RiskLevel.Rejected.color,
+                color = MaterialTheme.colorScheme.error,
             )
         }
 
         if (evidence.dataGaps.isNotEmpty()) {
             Text(
-                stringResource(R.string.evidence_gaps),
-                style = MaterialTheme.typography.labelMedium,
+                stringResource(R.string.evidence_gaps).uppercase(),
+                style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.tertiary,
             )
-            BulletList(evidence.dataGaps, color = MaterialTheme.colorScheme.tertiary)
+            BulletList(evidence.dataGaps, color = MaterialTheme.colorScheme.tertiary, isMonospace = false)
         }
 
         if (evidence.rejectedAlternatives.isNotEmpty()) {
             ExpandableSection(stringResource(R.string.evidence_rejected)) {
-                BulletList(evidence.rejectedAlternatives)
+                BulletList(evidence.rejectedAlternatives, color = MaterialTheme.colorScheme.onSurfaceVariant, isMonospace = true)
             }
         }
 
@@ -94,9 +98,10 @@ fun EvidenceCard(
                 TagRow(evidence.sourcesUsed)
                 if (evidence.dataFreshness.isNotEmpty()) {
                     Text(
-                        stringResource(R.string.evidence_freshness),
-                        style = MaterialTheme.typography.labelMedium,
+                        stringResource(R.string.evidence_freshness).uppercase(),
+                        style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(top = 4.dp),
                     )
                     evidence.dataFreshness.forEach { (key, value) -> Reading(key, value) }
                 }
@@ -124,27 +129,35 @@ fun EvidenceCard(
         if (lat != null && lon != null) {
             Reading("Coordinates", GeoPoint(lat, lon).format())
             Row(
-                Modifier.fillMaxWidth(),
+                Modifier.fillMaxWidth().padding(top = 4.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 if (onShowOnMap != null) {
-                    OutlinedButton(onClick = { onShowOnMap(GeoPoint(lat, lon)) }) {
-                        Icon(Icons.Filled.Map, contentDescription = null)
+                    OutlinedButton(
+                        onClick = { onShowOnMap(GeoPoint(lat, lon)) },
+                        shape = androidx.compose.foundation.shape.RoundedCornerShape(3.dp),
+                    ) {
+                        Icon(Icons.Filled.Map, contentDescription = null, modifier = Modifier.size(16.dp))
                         Text(
                             stringResource(R.string.evidence_show_on_map),
+                            style = MaterialTheme.typography.labelMedium,
                             modifier = Modifier.padding(start = 6.dp),
                         )
                     }
                 }
                 evidence.locationMapsUrl?.let { url ->
-                    OutlinedButton(onClick = {
-                        runCatching {
-                            context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
-                        }
-                    }) {
-                        Icon(Icons.AutoMirrored.Filled.OpenInNew, contentDescription = null)
+                    OutlinedButton(
+                        onClick = {
+                            runCatching {
+                                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+                            }
+                        },
+                        shape = androidx.compose.foundation.shape.RoundedCornerShape(3.dp),
+                    ) {
+                        Icon(Icons.AutoMirrored.Filled.OpenInNew, contentDescription = null, modifier = Modifier.size(16.dp))
                         Text(
                             stringResource(R.string.evidence_open_maps),
+                            style = MaterialTheme.typography.labelMedium,
                             modifier = Modifier.padding(start = 6.dp),
                         )
                     }
@@ -155,7 +168,8 @@ fun EvidenceCard(
         evidence.decisionId?.let {
             Text(
                 "Decision $it",
-                style = MaterialTheme.typography.labelMedium,
+                style = MaterialTheme.typography.labelSmall,
+                fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
             )
         }

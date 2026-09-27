@@ -31,7 +31,7 @@ async def _get_with_retry(client: httpx.AsyncClient, url: str, params: dict, ret
     last_exc = None
     for attempt in range(retries + 1):
         try:
-            resp = await asyncio.wait_for(client.get(url, params=params), timeout=10)
+            resp = await client.get(url, params=params)
             resp.raise_for_status()
             return resp
         except Exception as exc:  # pragma: no cover - network dependent
@@ -54,7 +54,7 @@ async def get_marine_forecast(lat: float, lon: float, hour_offset: int = 0) -> d
         if cached is not None:
             return cached
     try:
-        async with httpx.AsyncClient(timeout=15) as client:
+        async with httpx.AsyncClient(timeout=60.0) as client:
             resp = await _get_with_retry(
                 client,
                 settings.OPEN_METEO_MARINE_URL,
@@ -100,7 +100,7 @@ async def get_weather_forecast(lat: float, lon: float, hour_offset: int = 0) -> 
         if cached is not None:
             return cached
     try:
-        async with httpx.AsyncClient(timeout=15) as client:
+        async with httpx.AsyncClient(timeout=60.0) as client:
             resp = await _get_with_retry(
                 client,
                 "https://api.open-meteo.com/v1/forecast",

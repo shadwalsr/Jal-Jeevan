@@ -30,24 +30,195 @@ KNOWN_PLACES = [
     "Kandla", "Port Blair",
 ]
 
-_ROUTE_WORDS = ("route", "path", "way to", "how do i get", "navigate")
-# A passage is a route with a DESTINATION — the sailor/trader question
-# ("sail from Kochi to Colombo"), as opposed to the fisherman's radial
-# "find me a safe zone within 40km". Checked before _ROUTE_WORDS because
-# "how do I get to Chennai" matches both, and the more specific reading
-# (it names where you're going) is the right one.
-_PASSAGE_WORDS = ("passage", "voyage", "sail to", "sail from", "crossing", "deliver", "cargo to", "bound for")
-_SAFEST_ZONE_WORDS = ("safest", "safe zone", "where should i fish", "best place", "find a")
-_CURRENT_CONDITIONS_WORDS = ("safe to fish", "safe to go", "conditions", "weather", "wave", "wind", "is it safe")
+# Port aliases across Indian regional scripts (Devanagari, Odia, Tamil, Telugu, Bengali, Gujarati, Malayalam, Kannada)
+PORT_ALIASES: dict[str, str] = {
+    # Visakhapatnam
+    "विशाखापट्टनम": "Visakhapatnam",
+    "विशाखापत्तनम": "Visakhapatnam",
+    "विशाखा": "Visakhapatnam",
+    "వైజాగ్": "Visakhapatnam",
+    "విశాఖపట్నం": "Visakhapatnam",
+    "విశాఖ": "Visakhapatnam",
+    "விசாகப்பட்டினம்": "Visakhapatnam",
+    "விசாகா": "Visakhapatnam",
+    "বিশাখাপত্তনম": "Visakhapatnam",
+    "ବିଶାଖାପାଟଣା": "Visakhapatnam",
+    "વિશાખાપટ્ટનમ": "Visakhapatnam",
+    "ವಿಶಾಖಪಟ್ಟಣ": "Visakhapatnam",
+    "വിശാഖപട്ടണം": "Visakhapatnam",
+    "vizag": "Visakhapatnam",
+
+    # Paradip
+    "पारादीप": "Paradip",
+    "पारदीप": "Paradip",
+    "ପାରାଦୀପ": "Paradip",
+    "பாராதிப்": "Paradip",
+    "పారదీప్": "Paradip",
+    "প্যারাডিপ": "Paradip",
+    "પારાદીપ": "Paradip",
+    "ಪಾರಾದೀಪ್": "Paradip",
+    "പാരാദീപ്": "Paradip",
+    "para deep": "Paradip",
+    "para dip": "Paradip",
+
+    # Puri
+    "पुरी": "Puri",
+    "ପୁରୀ": "Puri",
+    "பூரி": "Puri",
+    "పూరీ": "Puri",
+    "পুরী": "Puri",
+    "પુરી": "Puri",
+    "ಪುರಿ": "Puri",
+    "പൂരി": "Puri",
+
+    # Kochi
+    "कोच्चि": "Kochi",
+    "कोचीन": "Kochi",
+    "കൊച്ചി": "Kochi",
+    "கொச்சி": "Kochi",
+    "కొచ్చి": "Kochi",
+    "কোচি": "Kochi",
+    "କୋଚି": "Kochi",
+    "કોચી": "Kochi",
+    "ಕೊಚ್ಚಿ": "Kochi",
+    "cochin": "Kochi",
+
+    # Chennai
+    "चेन्नई": "Chennai",
+    "சென்னை": "Chennai",
+    "చెన్నై": "Chennai",
+    "ചെന്നൈ": "Chennai",
+    "ચેન્નઈ": "Chennai",
+    "ଚେନ୍ନାଇ": "Chennai",
+    "চেন্নাই": "Chennai",
+    "ಚೆನ್ನೈ": "Chennai",
+    "madras": "Chennai",
+
+    # Mumbai
+    "मुंबई": "Mumbai",
+    "மும்பை": "Mumbai",
+    "ముంబై": "Mumbai",
+    "മുംബൈ": "Mumbai",
+    "મુંબઈ": "Mumbai",
+    "ମୁମ୍ବାଇ": "Mumbai",
+    "মুম্বাই": "Mumbai",
+    "ಮುಂಬೈ": "Mumbai",
+    "bombay": "Mumbai",
+
+    # Goa
+    "गोवा": "Goa",
+    "ગોવા": "Goa",
+    "கோவா": "Goa",
+    "గోవా": "Goa",
+    "ഗോവ": "Goa",
+    "ଗୋଆ": "Goa",
+    "গোয়া": "Goa",
+    "ಗೋವಾ": "Goa",
+
+    # Veraval
+    "वेरावल": "Veraval",
+    "વેરાવળ": "Veraval",
+    "வேராவல்": "Veraval",
+    "వేరావల్": "Veraval",
+    "ଭେରାଭାଲ": "Veraval",
+
+    # Porbandar
+    "पोरबंदर": "Porbandar",
+    "પોરબંદર": "Porbandar",
+    "போர்பந்தர்": "Porbandar",
+    "పోర్బందర్": "Porbandar",
+
+    # Tuticorin / Thoothukudi
+    "तूतीकोरिन": "Tuticorin",
+    "தூத்துக்குடி": "Tuticorin",
+    "తూత్తుకుడి": "Tuticorin",
+    "തൂത്തുക്കുടി": "Tuticorin",
+    "ତୁତିକୋରିନ": "Tuticorin",
+    "thoothukudi": "Tuticorin",
+
+    # Kakinada
+    "काकीनाडा": "Kakinada",
+    "కాకినాడ": "Kakinada",
+    "காக்கிநாடா": "Kakinada",
+    "କାକିନାଡ଼ା": "Kakinada",
+
+    # Haldia
+    "हल्दिया": "Haldia",
+    "হলদিয়া": "Haldia",
+    "ஹால்டியா": "Haldia",
+    "హల్దియా": "Haldia",
+    "ହଳଦିଆ": "Haldia",
+
+    # Kolkata
+    "कोलकाता": "Kolkata",
+    "কলকাতা": "Kolkata",
+    "கொல்கத்தா": "Kolkata",
+    "కోల్‌కతా": "Kolkata",
+    "କୋଲକାତା": "Kolkata",
+    "calcutta": "Kolkata",
+
+    # Mangalore / Mangaluru
+    "मंगलौर": "Mangalore",
+    "मंगलोर": "Mangalore",
+    "ಮಂಗಳೂರು": "Mangalore",
+    "மங்களூர்": "Mangalore",
+    "మంగళూరు": "Mangalore",
+    "മംഗലാപുരം": "Mangalore",
+    "mangaluru": "Mangalore",
+
+    # Rameswaram
+    "रामेश्वरम": "Rameswaram",
+    "ராமேஸ்வரம்": "Rameswaram",
+    "రామేశ్వరం": "Rameswaram",
+    "രാമേശ്വരം": "Rameswaram",
+}
+
+_ROUTE_WORDS = (
+    "route", "path", "way to", "how do i get", "navigate",
+    "मार्ग", "रास्ता", "दूरी", "दिशा", "जाना",
+    "பாதை", "வழி", "செல்ல",
+    "దారి", "మార్గం", "వెళ్ళాలి",
+    "ମାର୍ଗ", "ରାସ୍ତା", "ଯିବା",
+    "পথ", "রাস্তা",
+    "માર્ગ", "રસ્તો",
+    "വഴി", "പാത",
+    "ದಾರಿ", "ಮಾರ್ಗ",
+)
+
+_PASSAGE_WORDS = (
+    "passage", "voyage", "sail to", "sail from", "crossing", "deliver", "cargo to", "bound for"
+)
+
+_SAFEST_ZONE_WORDS = (
+    "safest", "safe zone", "where should i fish", "best place", "find a",
+    "कहाँ मछली", "सुरक्षित जगह", "எங்கு மீன்", "సురక్షిత ప్రాంతం", "କେଉଁଠାରେ ମାଛ", "কোথায় মাছ"
+)
+
+_CURRENT_CONDITIONS_WORDS = (
+    "safe to fish", "safe to go", "conditions", "weather", "wave", "wind", "is it safe",
+    # Hindi / Marathi
+    "मौसम", "सुरक्षित", "मछली", "हवा", "लहर", "लहरें", "तूफान", "चक्रवात", "बारिश", "कैसा है",
+    # Tamil
+    "பாதுகாப்பான", "வானிலை", "மீன்", "அலை", "காற்று", "புயல்", "மழை", "எப்படி",
+    # Telugu
+    "సురక్షిత", "వాతావరణం", "చేపలు", "అలలు", "గాలి", "తుఫాను", "వర్షం", "ఎలా ఉంది",
+    # Odia
+    "ସୁରକ୍ଷିତ", "ପାଣିପାଗ", "ମାଛ", "ଢେଉ", "ତରଙ୍ଗ", "ପବନ", "ବାତ୍ୟା", "ବର୍ଷା", "କିପରି",
+    # Bengali
+    "নিরাপদ", "আবহাওয়া", "মাছ", "ঢেউ", "বাতাস", "ঝড়", "বৃষ্টি", "কেমন",
+    # Gujarati
+    "સુરક્ષિત", "હવામાન", "માછલી", "મોજા", "પવન", "વાવાઝોડું", "વરસાદ",
+    # Malayalam
+    "സുരക്ഷിതം", "കാലാവസ്ഥ", "മത്സ്യം", "മീൻ", "തിരമാല", "കാറ്റ്", "ചുഴലിക്കാറ്റ്", "മഴ",
+    # Kannada
+    "ಸುರಕ್ಷಿತ", "ಹವಾಮಾನ", "ಮೀನು", "ಅಲೆಗಳು", "ಗಾಳಿ", "ಚಂಡಮಾರುತ", "ಮಳೆ",
+)
 
 _COORD_RE = re.compile(r"(-?\d{1,2}\.\d+)\s*,\s*(-?\d{1,3}\.\d+)")
 _RADIUS_RE = re.compile(r"(\d+(?:\.\d+)?)\s*(?:km|kms|kilometers?|kilometres?)\b", re.IGNORECASE)
 _VESSEL_LEN_RE = re.compile(r"(\d+(?:\.\d+)?)\s*(?:m|metre|meter)s?\s*(?:boat|vessel|yacht|ship)", re.IGNORECASE)
 
 # "from X to Y" / "X to Y" — the origin/destination pair a passage needs.
-# Anchored on the known-ports list rather than free text: an unknown place
-# name can't be planned to anyway (it has no harbour-entrance coordinates),
-# so matching one would only produce a confident failure later.
 _PLACES_ALT = "|".join(re.escape(p) for p in KNOWN_PLACES)
 _FROM_TO_RE = re.compile(
     r"\bfrom\s+(?:the\s+)?(" + _PLACES_ALT + r")\b.*?\bto\s+(?:the\s+)?(" + _PLACES_ALT + r")\b",
@@ -55,9 +226,6 @@ _FROM_TO_RE = re.compile(
 )
 _TO_RE = re.compile(r"\bto\s+(?:the\s+)?(" + _PLACES_ALT + r")\b", re.IGNORECASE)
 
-# Longest alias first so "bulk carrier" wins over "bulk", and "sailing boat"
-# over "sail" — a shorter alias matching first would silently pick a
-# different vessel class than the user named.
 _SORTED_ALIASES = sorted(CLASS_ALIASES.items(), key=lambda kv: -len(kv[0]))
 _CLASS_KEY_RE = re.compile(
     r"\b(" + "|".join(re.escape(k) for k in sorted(VESSEL_CLASSES, key=len, reverse=True)) + r")\b",
@@ -66,12 +234,6 @@ _CLASS_KEY_RE = re.compile(
 
 
 def _parse_vessel_class(lower: str) -> str | None:
-    """
-    Deterministic vessel-class extraction. Exact registry keys first (a
-    caller echoing back a class the API gave it), then the free-text alias
-    table. Returns None when nothing matches — the caller then falls through
-    to the documented default rather than this function guessing.
-    """
     key_match = _CLASS_KEY_RE.search(lower)
     if key_match:
         return key_match.group(1).lower()
@@ -79,6 +241,8 @@ def _parse_vessel_class(lower: str) -> str | None:
         if re.search(r"\b" + re.escape(alias) + r"\b", lower):
             return class_key
     return None
+
+
 _PLACE_RE = re.compile(
     r"\b(?:near|off|offshore|at|from|around)\s+(?:the\s+)?(" + "|".join(re.escape(p) for p in KNOWN_PLACES) + r")\b",
     re.IGNORECASE,
@@ -99,9 +263,6 @@ def parse_intent_rule_based(message: str) -> dict:
         if to_match:
             destination_name = to_match.group(1)
 
-    # A named destination IS the passage signal, with or without a keyword:
-    # "Kochi to Tuticorin" is unambiguously a passage request even though it
-    # contains no verb at all.
     if destination_name or any(w in lower for w in _PASSAGE_WORDS):
         intent_type = "passage"
     elif any(w in lower for w in _ROUTE_WORDS):
@@ -119,9 +280,17 @@ def parse_intent_rule_based(message: str) -> dict:
         lat, lon = float(coord_match.group(1)), float(coord_match.group(2))
 
     location_name = None
-    place_match = _PLACE_RE.search(message) or _PLACE_ANYWHERE_RE.search(message)
-    if place_match:
-        location_name = place_match.group(1) if place_match.re is _PLACE_RE else place_match.group(0)
+    # 1. First check regional Indian script port names & aliases
+    for alias, canon in PORT_ALIASES.items():
+        if alias in message or alias.lower() in lower:
+            location_name = canon
+            break
+
+    # 2. If not matched, fallback to English regex
+    if not location_name:
+        place_match = _PLACE_RE.search(message) or _PLACE_ANYWHERE_RE.search(message)
+        if place_match:
+            location_name = place_match.group(1) if place_match.re is _PLACE_RE else place_match.group(0)
 
     radius_match = _RADIUS_RE.search(message)
     radius_km = float(radius_match.group(1)) if radius_match else 40.0
@@ -129,8 +298,6 @@ def parse_intent_rule_based(message: str) -> dict:
     vessel_match = _VESSEL_LEN_RE.search(message)
     vessel_length_m = float(vessel_match.group(1)) if vessel_match else 8.0
 
-    # On a passage, the place named after "from" is the origin — don't let
-    # the generic place matcher report the destination as the location.
     if origin_name:
         location_name = origin_name
 

@@ -22,10 +22,8 @@ async def geocode(place_name: str) -> dict:
     if cached is not None:
         return cached
     try:
-        async with httpx.AsyncClient(timeout=10, headers=HEADERS) as client:
-            resp = await asyncio.wait_for(
-                client.get(NOMINATIM_URL, params={"q": place_name, "format": "json", "limit": 1}), timeout=10
-            )
+        async with httpx.AsyncClient(timeout=60.0, headers=HEADERS) as client:
+            resp = await client.get(NOMINATIM_URL, params={"q": place_name, "format": "json", "limit": 1})
             resp.raise_for_status()
             results = resp.json()
         if not results:

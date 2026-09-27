@@ -9,24 +9,21 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Block
 import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.HistoryToggleOff
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -37,16 +34,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.jaljeev.marine.domain.RiskLevel
 import java.util.concurrent.TimeUnit
 
 /**
- * Renders a risk verdict.
- *
- * A veto and a score are shown differently on purpose: a REJECTED result has
- * no meaningful number (the backend short-circuits before scoring, so its
- * factor_breakdown is empty), and showing "0/100" or "100/100" next to it
- * would invent a quantity the pipeline never produced.
+ * Renders a risk verdict matching the website's .risk-chip and .risk-veto:
+ * Square swatch (12dp) with hairline border + monospace label and score.
+ * A veto is displayed with the exclusion accent and plain-language explanation.
  */
 @Composable
 fun RiskBadge(
@@ -54,56 +49,102 @@ fun RiskBadge(
     score: Int?,
     modifier: Modifier = Modifier,
 ) {
-    val color = level.color
-    Row(
-        modifier = modifier
-            .background(color.copy(alpha = 0.14f), RoundedCornerShape(8.dp))
-            .border(1.dp, color.copy(alpha = 0.5f), RoundedCornerShape(8.dp))
-            .padding(horizontal = 10.dp, vertical = 6.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(6.dp),
-    ) {
-        if (level.isVeto) {
-            Icon(Icons.Filled.Block, contentDescription = null, tint = color, modifier = Modifier.size(16.dp))
-        } else {
-            Box(Modifier.size(10.dp).background(color, CircleShape))
-        }
-        Text(
-            text = level.label,
-            style = MaterialTheme.typography.labelLarge,
-            color = color,
-        )
-        if (!level.isVeto && score != null && level.isScored) {
+    if (level.isVeto) {
+        Column(
+            modifier = modifier
+                .fillMaxWidth()
+                .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(3.dp))
+                .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(3.dp))
+                .padding(horizontal = 12.dp, vertical = 10.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                Box(
+                    Modifier
+                        .size(12.dp)
+                        .background(level.color)
+                        .border(1.dp, MaterialTheme.colorScheme.outlineVariant)
+                )
+                Text(
+                    text = "Not permitted — do not go",
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.error,
+                )
+            }
             Text(
-                text = "$score/100",
-                style = MaterialTheme.typography.labelMedium,
+                text = "Vetoed before scoring. Scoring only runs on points that pass legal and survivability checks.",
+                style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
+        return
+    }
+
+    Row(
+        modifier = modifier.padding(vertical = 2.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Box(
+            Modifier
+                .size(12.dp)
+                .background(level.color)
+                .border(1.dp, MaterialTheme.colorScheme.outlineVariant)
+        )
+        Text(
+            text = buildString {
+                append(level.wire)
+                if (score != null && level.isScored) {
+                    append(" ")
+                    append(score)
+                    append("/100")
+                }
+            },
+            fontFamily = FontFamily.Monospace,
+            fontSize = 13.sp,
+            fontWeight = FontWeight.Medium,
+            color = MaterialTheme.colorScheme.onSurface,
+        )
     }
 }
 
+/**
+ * Flat container with a 1px hairline border matching the website's .surface class.
+ */
 @Composable
 fun SectionCard(
     title: String? = null,
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit,
 ) {
-    Card(
-        modifier = modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        shape = RoundedCornerShape(14.dp),
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(3.dp))
+            .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(3.dp))
+            .padding(14.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
-        Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            if (title != null) {
-                Text(
-                    title.uppercase(),
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-            content()
+        if (title != null) {
+            Text(
+                title.uppercase(),
+                style = MaterialTheme.typography.labelSmall,
+                fontWeight = FontWeight.SemiBold,
+                letterSpacing = 0.5.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Box(
+                Modifier
+                    .fillMaxWidth()
+                    .height(1.dp)
+                    .background(MaterialTheme.colorScheme.outline)
+            )
         }
+        content()
     }
 }
 
@@ -124,7 +165,11 @@ fun ExpandableSection(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
-            Text(title, style = MaterialTheme.typography.labelLarge)
+            Text(
+                title,
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
             Icon(
                 if (expanded) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore,
                 contentDescription = null,
@@ -132,20 +177,23 @@ fun ExpandableSection(
             )
         }
         AnimatedVisibility(expanded) {
-            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) { content() }
+            Column(
+                modifier = Modifier.padding(top = 4.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                content()
+            }
         }
     }
 }
 
 /**
- * One measurement. [value] is null when the source did not answer - which is
- * rendered as an explicit "not available", never as a zero or a dash that
- * could be mistaken for a reading.
+ * One measurement. Numbers rendered in monospace matching instrument cues.
  */
 @Composable
 fun Reading(label: String, value: String?, modifier: Modifier = Modifier) {
     Row(
-        modifier.fillMaxWidth(),
+        modifier.fillMaxWidth().padding(vertical = 2.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.Top,
     ) {
@@ -158,6 +206,7 @@ fun Reading(label: String, value: String?, modifier: Modifier = Modifier) {
         Text(
             value ?: "not available",
             style = MaterialTheme.typography.bodyMedium,
+            fontFamily = FontFamily.Monospace,
             fontWeight = if (value != null) FontWeight.Medium else FontWeight.Normal,
             color = if (value != null) MaterialTheme.colorScheme.onSurface
             else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
@@ -166,12 +215,26 @@ fun Reading(label: String, value: String?, modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun BulletList(lines: List<String>, color: Color = MaterialTheme.colorScheme.onSurface) {
+fun BulletList(
+    lines: List<String>,
+    color: Color = MaterialTheme.colorScheme.onSurface,
+    isMonospace: Boolean = false,
+) {
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         lines.forEach { line ->
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text("•", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                Text(line, style = MaterialTheme.typography.bodyMedium, color = color)
+                Text(
+                    "–",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+                Text(
+                    line,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontFamily = if (isMonospace) FontFamily.Monospace else null,
+                    fontSize = if (isMonospace) 12.sp else 14.sp,
+                    color = color,
+                )
             }
         }
     }
@@ -187,11 +250,13 @@ fun TagRow(items: List<String>) {
         items.forEach { item ->
             Text(
                 item,
-                style = MaterialTheme.typography.labelMedium,
+                style = MaterialTheme.typography.labelSmall,
+                fontFamily = FontFamily.Monospace,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier
-                    .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(6.dp))
-                    .padding(horizontal = 8.dp, vertical = 4.dp),
+                    .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(3.dp))
+                    .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(3.dp))
+                    .padding(horizontal = 7.dp, vertical = 3.dp),
             )
         }
     }
@@ -204,38 +269,38 @@ fun ErrorCard(
     onRetry: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
 ) {
-    Card(
-        modifier = modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
-        shape = RoundedCornerShape(14.dp),
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.errorContainer, RoundedCornerShape(3.dp))
+            .border(1.dp, MaterialTheme.colorScheme.error.copy(alpha = 0.25f), RoundedCornerShape(3.dp))
+            .padding(14.dp),
+        verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
-        Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Icon(
-                    Icons.Filled.ErrorOutline,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onErrorContainer,
-                    modifier = Modifier.size(18.dp),
-                )
-                Text(
-                    message,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onErrorContainer,
-                )
-            }
-            if (detail != null) {
-                // The exact exception type and message, not a friendly
-                // paraphrase - a swallowed cause is how this project once
-                // spent two sessions chasing a "hang" that was an instant 429.
-                Text(
-                    detail,
-                    style = MaterialTheme.typography.labelMedium,
-                    fontFamily = FontFamily.Monospace,
-                    color = MaterialTheme.colorScheme.onErrorContainer.copy(alpha = 0.75f),
-                )
-            }
-            if (onRetry != null) {
-                TextButton(onClick = onRetry) { Text("Retry") }
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Icon(
+                Icons.Filled.ErrorOutline,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.error,
+                modifier = Modifier.size(16.dp),
+            )
+            Text(
+                message,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onErrorContainer,
+            )
+        }
+        if (detail != null) {
+            Text(
+                detail,
+                style = MaterialTheme.typography.labelSmall,
+                fontFamily = FontFamily.Monospace,
+                color = MaterialTheme.colorScheme.onErrorContainer.copy(alpha = 0.8f),
+            )
+        }
+        if (onRetry != null) {
+            TextButton(onClick = onRetry) {
+                Text("Retry", style = MaterialTheme.typography.labelMedium)
             }
         }
     }
@@ -247,7 +312,8 @@ fun StaleDataBanner(ageMillis: Long, modifier: Modifier = Modifier) {
     Row(
         modifier
             .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.tertiary.copy(alpha = 0.14f), RoundedCornerShape(10.dp))
+            .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(3.dp))
+            .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(3.dp))
             .padding(10.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -256,25 +322,65 @@ fun StaleDataBanner(ageMillis: Long, modifier: Modifier = Modifier) {
             Icons.Filled.HistoryToggleOff,
             contentDescription = null,
             tint = MaterialTheme.colorScheme.tertiary,
-            modifier = Modifier.size(18.dp),
+            modifier = Modifier.size(16.dp),
         )
         Text(
-            "Offline - showing the last saved answer for this point, ${formatAge(ageMillis)} old. Not a current reading.",
-            style = MaterialTheme.typography.bodyMedium,
+            "Offline — showing last saved answer for this point (${formatAge(ageMillis)} old). Not a current reading.",
+            style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.tertiary,
         )
     }
 }
 
+private val PIPELINE_STEPS = listOf(
+    "parse_intent",
+    "resolve_location",
+    "execute_tools · weather · ocean · geo",
+    "synthesize_answer",
+)
+
+/**
+ * Thinking state matching the website: cycling pipeline step names in monospace
+ * with a 1px hairline progress track.
+ */
 @Composable
-fun LoadingRow(text: String, modifier: Modifier = Modifier) {
-    Row(
-        modifier.fillMaxWidth().padding(8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(10.dp),
+fun LoadingRow(text: String = "", modifier: Modifier = Modifier) {
+    var elapsedMs by remember { mutableStateOf(0L) }
+    LaunchedEffect(Unit) {
+        val start = System.currentTimeMillis()
+        while (true) {
+            elapsedMs = System.currentTimeMillis() - start
+            kotlinx.coroutines.delay(150)
+        }
+    }
+    val step = ((elapsedMs / 900).toInt()).coerceIn(0, PIPELINE_STEPS.size - 1)
+    val progress = (elapsedMs / 5000f).coerceIn(0.06f, 0.92f)
+
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
-        CircularProgressIndicator(strokeWidth = 2.dp, modifier = Modifier.size(16.dp))
-        Text(text, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(
+            PIPELINE_STEPS[step],
+            fontFamily = FontFamily.Monospace,
+            fontSize = 13.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Box(
+            Modifier
+                .fillMaxWidth()
+                .height(1.dp)
+                .background(MaterialTheme.colorScheme.outline)
+        ) {
+            Box(
+                Modifier
+                    .fillMaxWidth(progress)
+                    .height(1.dp)
+                    .background(MaterialTheme.colorScheme.onSurface)
+            )
+        }
     }
 }
 

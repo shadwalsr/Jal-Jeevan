@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: jaljeev-backend
+    env: docker
+    dockerfilePath: Dockerfile
+    dockerContext: .
+    plan: free
+    region: singapore
+    healthCheckPath: /health
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: ENV
+        value: production
+      - key: CORS_ORIGINS
+        value: "*"
+      - key: LOG_LEVEL
+        value: INFO
+      - key: SARVAM_API_KEY
+        value: sk_rlsmpryc_39CSSgULU6lMuom7Lkt8MvbI
+      - key: GROQ_API_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+

@@ -1,0 +1,62 @@
+<resources>
+    <string name="app_name">ஜல் ஜீவன்</string>
+
+    <string name="tab_ask">கேளுங்கள்</string>
+    <string name="tab_map">வரைபடம்</string>
+    <string name="tab_route">பாதை</string>
+    <string name="tab_watch">பாதுகாப்பு</string>
+    <string name="settings">அமைப்புகள்</string>
+    <string name="back">பின்செல்</string>
+
+    <string name="chat_hint">கடல் நிலை, பாதுகாப்பு அல்லது செல்லும் இடம் பற்றிக் கேளுங்கள்</string>
+    <string name="chat_send">அனுப்பு</string>
+    <string name="chat_new_session">புதிய உரையாடல்</string>
+    <string name="chat_empty_title">கடல் பற்றி எதையும் கேளுங்கள்</string>
+    <string name="chat_empty_body">ஒவ்வொரு பதிலிலும் ஆதார ரசீது இணைக்கப்படும்: பயன்படுத்தப்பட்ட மூலங்கள், ஆபத்து அளவீடு மற்றும் தரவு இடைவெளிகள்.</string>
+    <string name="chat_use_location">கேள்வியுடன் எனது இருப்பிடத்தை இணைக்கவும்</string>
+    <string name="chat_thinking">வானிலை மற்றும் கடல் நிலவரம் கணிக்கப்படுகிறது…</string>
+
+    <string name="evidence_title">ஆதார ரசீது</string>
+    <string name="evidence_why">இந்த பதில் ஏன்?</string>
+    <string name="evidence_factors">ஆபத்து காரணிகள்</string>
+    <string name="evidence_sources">பயன்படுத்தப்பட்ட மூலங்கள்</string>
+    <string name="evidence_freshness">தரவு புதுப்பிப்பு</string>
+    <string name="evidence_gaps">தரவு இடைவெளிகள்</string>
+    <string name="evidence_rejected">மாற்று வழிகள் ஏன் நிராகரிக்கப்பட்டன</string>
+    <string name="evidence_confidence">நம்பகத்தன்மை</string>
+    <string name="evidence_validation">சரிபார்ப்பு</string>
+    <string name="evidence_open_maps">வரைபடத்தில் திற</string>
+    <string name="evidence_show_on_map">வரைபடத்தில் காட்டு</string>
+    <string name="planner_trace">திட்டமிடல் படிகள்</string>
+
+    <string name="map_check_point">இப்பகுதியைச் சரிபார்க்கவும்</string>
+    <string name="map_my_location">எனது இருப்பிடம்</string>
+    <string name="map_tap_hint">நிலவரத்தை அறிய கடலில் ஏதேனும் ஒரு பகுதியைத் தொடவும்.</string>
+    <string name="map_conditions">கடல் நிலவரம்</string>
+
+    <string name="route_range">தேடல் ஆரம்</string>
+    <string name="route_find_safest">பாதுகாப்பான பகுதி (விரைவு ஆய்வு)</string>
+    <string name="route_optimize">சரியான பாதை (A*)</string>
+    <string name="route_candidates">மதிப்பிடப்பட்ட வழிகள்</string>
+    <string name="route_waypoints">வழிப்புள்ளிகள்</string>
+    <string name="route_origin">தொடக்கப் புள்ளி</string>
+
+    <string name="monitor_start">கண்காணிப்பைத் தொடங்கு</string>
+    <string name="monitor_stop">கண்காணிப்பை நிறுத்து</string>
+    <string name="monitor_title">நேரலை பாதுகாப்பு கண்காணிப்பு</string>
+
+    <string name="notification_channel_alert_name">பாதுகாப்பு எச்சரிக்கைகள்</string>
+    <string name="notification_channel_alert_desc">கடல் நிலை ஆபத்தாக மாறும்போது வரும் எச்சரிக்கை</string>
+    <string name="notification_channel_status_name">கண்காணிப்பு நிலை</string>
+    <string name="notification_channel_status_desc">பாதுகாப்பு கண்காணிப்பு இயங்கும்போது காட்டப்படும் அறிவிப்பு</string>
+
+    <string name="language_select">மொழியைத் தேர்ந்தெடுக்கவும்</string>
+    <string name="language_title">மொழி / Language</string>
+    <string name="language_desc">உங்கள் பிராந்திய கடலோர மொழியைத் தேர்ந்தெடுக்கவும்</string>
+    <string name="language_saved">மொழி மாற்றப்பட்டது</string>
+    <string name="reasoning">காரணங்களைக் காண்க</string>
+    <string name="hide_reasoning">காரணங்களை மறை</string>
+    <string name="vetoed_title">அனுமதி இல்லை — கடலுக்குச் செல்ல வேண்டாம்</string>
+    <string name="sources_label">மூலங்கள்</string>
+    <string name="gaps_label">இடைவெளிகள்</string>
+</resources>

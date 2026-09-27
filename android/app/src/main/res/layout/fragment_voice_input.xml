@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="24dp"
+    android:background="@drawable/voice_sheet_bg">
+
+    <!-- Language Selector -->
+    <Spinner
+        android:id="@+id/languageSpinner"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginBottom="16dp" />
+
+    <!-- Waveform Visualizer -->
+    <com.jaljeev.ui.voice.WaveformView
+        android:id="@+id/waveformView"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:visibility="gone"
+        android:layout_marginBottom="12dp" />
+
+    <!-- Elapsed Timer -->
+    <TextView
+        android:id="@+id/elapsedTimer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:visibility="gone"
+        android:textSize="24sp"
+        android:textColor="@color/mic_active_red"
+        android:text="00:00" />
+
+    <!-- Giant PTT Button -->
+    <ImageButton
+        android:id="@+id/pttButton"
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="20dp"
+        android:background="@drawable/mic_button_bg"
+        android:src="@drawable/ic_mic_jaljeev"
+        android:contentDescription="Hold to speak" />
+
+    <!-- Status Text — bilingual -->
+    <TextView
+        android:id="@+id/statusText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:text="@string/voice_idle_hint"
+        android:textSize="14sp"
+        android:textColor="@color/text_secondary"
+        android:gravity="center" />
+
+    <!-- Transcript Preview -->
+    <TextView
+        android:id="@+id/transcriptPreview"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:visibility="gone"
+        android:padding="12dp"
+        android:background="@drawable/transcript_bg"
+        android:textSize="16sp"
+        android:textColor="@color/text_primary" />
+
+    <!-- Send Button -->
+    <Button
+        android:id="@+id/sendButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:visibility="gone"
+        android:text="@string/voice_send"
+        android:backgroundTint="@color/safe_green" />
+
+    <!-- Cancel -->
+    <Button
+        style="?android:attr/borderlessButtonStyle"
+        android:id="@+id/cancelButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/voice_cancel" />
+
+</LinearLayout>

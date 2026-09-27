@@ -14,6 +14,7 @@ from slowapi.util import get_remote_address
 from app.api.chat import router as chat_router
 from app.api.map import router as map_router
 from app.api.marine import router as marine_router
+from app.api.speech import router as speech_router
 from app.core.config import settings
 from app.tools.incois_adapter import get_incois_wave_forecast
 from app.tools.imd_adapter import get_imd_current_weather
@@ -35,13 +36,17 @@ app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 app.add_middleware(SlowAPIMiddleware)
 
-# Dev-only wide-open CORS so the Vite frontend (localhost:5173) can call this
-# API (localhost:8000) during development. Tighten to an explicit allowlist
-# before any real deployment.
+# CORS middleware: allows requests from configured origins (or wildcard in dev/demo).
+# In production, can be restricted via CORS_ORIGINS environment variable
+# (e.g. CORS_ORIGINS="https://your-site.vercel.app,http://localhost:5173").
+raw_origins = [o.strip() for o in settings.CORS_ORIGINS.split(",") if o.strip()]
+cors_origins = raw_origins if raw_origins else ["*"]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"] if settings.ENV == "development" else [],
-    allow_credentials=False,
+    allow_origins=cors_origins,
+    allow_origin_regex=r"https://.*\.vercel\.app" if "*" not in cors_origins else None,
+    allow_credentials=False if "*" in cors_origins else True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -49,6 +54,7 @@ app.add_middleware(
 app.include_router(marine_router)
 app.include_router(chat_router)
 app.include_router(map_router)
+app.include_router(speech_router)
 
 
 @app.get("/health")

@@ -26,8 +26,9 @@ import { getBoundaries, type RouteWaypointRisk } from "./api";
  * CARTO Positron is back as the tile source per instruction; the difference
  * this time is HOW it's drawn, not where the tiles come from.
  */
-const CARTO_TILE_URL = "https://basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png";
-const CARTO_ATTRIBUTION = "© OpenStreetMap contributors © CARTO";
+const CARTO_API_KEY = import.meta.env.VITE_CARTO_API_KEY || "cb1_3ygh_1_489751477ea831cb0cad0c9b";
+const CARTO_TILE_URL = `https://basemaps.cartocdn.com/rastertiles/light_all/{z}/{x}/{y}{r}.png?key=${CARTO_API_KEY}`;
+const CARTO_ATTRIBUTION = '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions" target="_blank" rel="noopener">CARTO</a>';
 
 function riskColor(score: number): string {
   if (score >= 75) return "#e3675a"; // EXTREME

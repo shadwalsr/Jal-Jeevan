@@ -21,15 +21,22 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.runtime.collectAsState
+import com.jaljeev.marine.R
 import com.jaljeev.marine.appContainer
 import com.jaljeev.marine.data.settings.VesselProfile
 import com.jaljeev.marine.domain.ApiOutcome
+import com.jaljeev.marine.ui.common.LanguageSelectionDialog
 import com.jaljeev.marine.ui.common.SectionCard
+import com.jaljeev.marine.util.LocaleHelper
 import kotlinx.coroutines.launch
 
 @Composable
@@ -55,6 +62,36 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
             .padding(12.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
+        SectionCard(title = stringResource(R.string.language_title)) {
+            val currentLang by LocaleHelper.currentLanguageFlow.collectAsState()
+            var showLanguageDialog by remember { mutableStateOf(false) }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    Text(
+                        currentLang.nativeName,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        "${currentLang.displayName} • ${currentLang.region}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                OutlinedButton(onClick = { showLanguageDialog = true }) {
+                    Text(stringResource(R.string.language_select))
+                }
+            }
+
+            if (showLanguageDialog) {
+                LanguageSelectionDialog(onDismiss = { showLanguageDialog = false })
+            }
+        }
 
         SectionCard(title = "Backend") {
             OutlinedTextField(

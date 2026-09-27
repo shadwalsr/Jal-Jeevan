@@ -27,6 +27,8 @@ class ChatRequest(BaseModel):
     # the water, not just someone planning a trip from home.
     client_lat: float | None = None
     client_lon: float | None = None
+    language: str | None = None  # UI selected language code (hi, ta, te, ml, bn, gu, mr, od, kn, en)
+    is_voice: bool = False
 
     @field_validator("message")
     @classmethod
@@ -46,6 +48,9 @@ class ChatResponse(BaseModel):
     evidence: dict
     decision_id: str
     session_id: str
+    language_code: str | None = None
+    is_voice: bool = False
+
 
 
 @router.post("/chat", response_model=ChatResponse)
@@ -71,8 +76,14 @@ async def chat(request: ChatRequest):
         # on the client forever. If this ceiling is ever hit again, find the
         # stage that blew its own bound rather than raising this number.
         result = await asyncio.wait_for(
-            run_planner(request.message, session_id=session_id, client_lat=client_lat, client_lon=client_lon),
-            timeout=115,
+            run_planner(
+                request.message,
+                session_id=session_id,
+                client_lat=client_lat,
+                client_lon=client_lon,
+                language=request.language,
+            ),
+            timeout=300,
         )
     except asyncio.TimeoutError:
         raise HTTPException(status_code=504, detail="The request took too long to process. Try again shortly.")
@@ -102,4 +113,6 @@ async def chat(request: ChatRequest):
         evidence=result.get("evidence", {}),
         decision_id=decision_id,
         session_id=session_id,
+        language_code=result.get("language_code", "en-IN"),
+        is_voice=request.is_voice,
     )

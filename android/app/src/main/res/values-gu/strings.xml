@@ -1,0 +1,62 @@
+<resources>
+    <string name="app_name">જલ જીવન</string>
+
+    <string name="tab_ask">પૂછો</string>
+    <string name="tab_map">નકશો</string>
+    <string name="tab_route">માર્ગ</string>
+    <string name="tab_watch">સુરક્ષા</string>
+    <string name="settings">સેટિંગ્સ</string>
+    <string name="back">પાછળ</string>
+
+    <string name="chat_hint">દરિયાઈ સ્થિતિ, સુરક્ષા અથવા ક્યાં જવું તે પૂછો</string>
+    <string name="chat_send">મોકલો</string>
+    <string name="chat_new_session">નવી વાતચીત</string>
+    <string name="chat_empty_title">દરિયા વિશે કંઈપણ પૂછો</string>
+    <string name="chat_empty_body">દરેક જવાબ સાથે પુરાવા રસીદ મળે છે: સ્ત્રોતો, જોખમ સ્કોર અને અધૂરી માહિતી.</string>
+    <string name="chat_use_location">પ્રશ્ન સાથે મારું સ્થાન જોડો</string>
+    <string name="chat_thinking">હવામાન અને દરિયાઈ સ્થિતિ ચકાસી રહ્યું છે…</string>
+
+    <string name="evidence_title">પુરાવા રસીદ</string>
+    <string name="evidence_why">આ જવાબ કેમ?</string>
+    <string name="evidence_factors">જોખમી પરિબળો</string>
+    <string name="evidence_sources">વપરાયેલ સ્ત્રોતો</string>
+    <string name="evidence_freshness">માહિતી તાજગી</string>
+    <string name="evidence_gaps">ડેટા ખામી</string>
+    <string name="evidence_rejected">અન્ય વિકલ્પો કેમ નકાર્યા</string>
+    <string name="evidence_confidence">વિશ્વાસપાત્રતા</string>
+    <string name="evidence_validation">ચકાસણી</string>
+    <string name="evidence_open_maps">નકશામાં ખોલો</string>
+    <string name="evidence_show_on_map">નકશા પર જુઓ</string>
+    <string name="planner_trace">આયોજન પગલાં</string>
+
+    <string name="map_check_point">આ બિંદુ ચકાસો</string>
+    <string name="map_my_location">મારું સ્થાન</string>
+    <string name="map_tap_hint">સ્થિતિ જાણવા દરિયામાં ગમે ત્યાં ટેપ કરો.</string>
+    <string name="map_conditions">દરિયાઈ સ્થિતિ</string>
+
+    <string name="route_range">શોધ ત્રિજ્યા</string>
+    <string name="route_find_safest">સુરક્ષિત ક્ષેત્ર (ઝડપી સ્કેન)</string>
+    <string name="route_optimize">શ્રેષ્ઠ માર્ગ (A*)</string>
+    <string name="route_candidates">તપાસેલા માર્ગો</string>
+    <string name="route_waypoints">વેપોઇન્ટ્સ</string>
+    <string name="route_origin">પ્રારંભિક બિંદુ</string>
+
+    <string name="monitor_start">નિરીક્ષણ શરૂ કરો</string>
+    <string name="monitor_stop">નિરીક્ષણ બંધ કરો</string>
+    <string name="monitor_title">લાઇવ સુરક્ષા નિરીક્ષણ</string>
+
+    <string name="notification_channel_alert_name">સુરક્ષા ચેતવણીઓ</string>
+    <string name="notification_channel_alert_desc">જ્યારે દરિયાઈ સ્થિતિ અસુરક્ષિત બને ત્યારે ચેતવણી</string>
+    <string name="notification_channel_status_name">નિરીક્ષણ સ્થિતિ</string>
+    <string name="notification_channel_status_desc">સુરક્ષા નિરીક્ષણ ચાલુ હોય ત્યારે સૂચના</string>
+
+    <string name="language_select">ભાષા પસંદ કરો</string>
+    <string name="language_title">ભાષા / Language</string>
+    <string name="language_desc">તમારી પ્રાદેશિક દરિયાકાંઠાની ભાષા પસંદ કરો</string>
+    <string name="language_saved">ભાષા બદલાઈ ગઈ</string>
+    <string name="reasoning">કારણો જુઓ</string>
+    <string name="hide_reasoning">કારણો છુપાવો</string>
+    <string name="vetoed_title">મંજૂરી નથી — દરિયામાં જશો નહીં</string>
+    <string name="sources_label">સ્ત્રોતો</string>
+    <string name="gaps_label">ખામી</string>
+</resources>

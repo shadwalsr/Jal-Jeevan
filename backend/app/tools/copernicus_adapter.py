@@ -142,41 +142,35 @@ async def get_physics_subset(lat: float, lon: float) -> dict:
         # stall the whole request — a slow source failing fast beats a slow
         # source blocking everything (PRD's graceful-degradation principle).
         loop = asyncio.get_running_loop()
-        await asyncio.wait_for(loop.run_in_executor(network_executor, _ensure_login), timeout=10)
+        await loop.run_in_executor(network_executor, _ensure_login)
         import functools
 
         async with _open_semaphore:
-            values = await asyncio.wait_for(
-                loop.run_in_executor(
-                    network_executor,
-                    functools.partial(
-                        _open_read_close,
-                        # NOTE: mlotst (mixed-layer depth) is NOT in this hourly
-                        # product despite being in the combined "_my_" reanalysis
-                        # dataset used for the bulk download — confirmed by a
-                        # live 404 on the variable name. Left out rather than
-                        # guessing at a different dataset ID; MLD stays
-                        # unavailable live until that's tracked down.
-                        dataset_id="cmems_mod_glo_phy_anfc_0.083deg_PT1H-m",
-                        variables=["thetao", "uo", "vo", "zos", "so"],
-                        lat=lat,
-                        lon=lon,
-                        half_deg=0.25,
-                        min_depth=0.49,
-                        max_depth=0.5,
-                        fields={
-                            "sst_c": ("thetao", 2),
-                            "current_u_ms": ("uo", 3),
-                            "current_v_ms": ("vo", 3),
-                            "sea_level_anomaly_m": ("zos", 3),
-                            "salinity_psu": ("so", 3),
-                        },
-                    ),
+            values = await loop.run_in_executor(
+                network_executor,
+                functools.partial(
+                    _open_read_close,
+                    # NOTE: mlotst (mixed-layer depth) is NOT in this hourly
+                    # product despite being in the combined "_my_" reanalysis
+                    # dataset used for the bulk download — confirmed by a
+                    # live 404 on the variable name. Left out rather than
+                    # guessing at a different dataset ID; MLD stays
+                    # unavailable live until that's tracked down.
+                    dataset_id="cmems_mod_glo_phy_anfc_0.083deg_PT1H-m",
+                    variables=["thetao", "uo", "vo", "zos", "so"],
+                    lat=lat,
+                    lon=lon,
+                    half_deg=0.25,
+                    min_depth=0.49,
+                    max_depth=0.5,
+                    fields={
+                        "sst_c": ("thetao", 2),
+                        "current_u_ms": ("uo", 3),
+                        "current_v_ms": ("vo", 3),
+                        "sea_level_anomaly_m": ("zos", 3),
+                        "salinity_psu": ("so", 3),
+                    },
                 ),
-                # Raised from 12s: this budget now covers the actual data
-                # transfer too, not just the (cheap, lazy) dataset open — the
-                # transfer used to happen outside any timeout at all.
-                timeout=12,
             )
         result = {
             "source": "Copernicus Marine",
@@ -213,26 +207,23 @@ async def get_bgc_subset(lat: float, lon: float) -> dict:
         return cached
     try:
         loop = asyncio.get_running_loop()
-        await asyncio.wait_for(loop.run_in_executor(network_executor, _ensure_login), timeout=10)
+        await loop.run_in_executor(network_executor, _ensure_login)
         import functools
 
         async with _open_semaphore:
-            values = await asyncio.wait_for(
-                loop.run_in_executor(
-                    network_executor,
-                    functools.partial(
-                        _open_read_close,
-                        dataset_id="cmems_mod_glo_bgc-pft_anfc_0.25deg_P1D-m",
-                        variables=["chl"],
-                        lat=lat,
-                        lon=lon,
-                        half_deg=0.3,
-                        min_depth=0.49,
-                        max_depth=0.6,
-                        fields={"chlorophyll_mg_m3": ("chl", 4)},
-                    ),
+            values = await loop.run_in_executor(
+                network_executor,
+                functools.partial(
+                    _open_read_close,
+                    dataset_id="cmems_mod_glo_bgc-pft_anfc_0.25deg_P1D-m",
+                    variables=["chl"],
+                    lat=lat,
+                    lon=lon,
+                    half_deg=0.3,
+                    min_depth=0.49,
+                    max_depth=0.6,
+                    fields={"chlorophyll_mg_m3": ("chl", 4)},
                 ),
-                timeout=12,
             )
         result = {
             "source": "Copernicus Marine BGC",

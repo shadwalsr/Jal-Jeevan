@@ -1,0 +1,62 @@
+<resources>
+    <string name="app_name">জল জীবন</string>
+
+    <string name="tab_ask">জিজ্ঞাসা</string>
+    <string name="tab_map">মানচিত্র</string>
+    <string name="tab_route">যাত্রাপথ</string>
+    <string name="tab_watch">সুরক্ষা</string>
+    <string name="settings">সেটিংস</string>
+    <string name="back">পেছনে</string>
+
+    <string name="chat_hint">সমুদ্রের অবস্থা, সুরক্ষা বা কোথায় যাবেন তা জিজ্ঞাসা করুন</string>
+    <string name="chat_send">পাঠান</string>
+    <string name="chat_new_session">নতুন কথোপকথন</string>
+    <string name="chat_empty_title">সমুদ্র সম্পর্কে যেকোনো প্রশ্ন করুন</string>
+    <string name="chat_empty_body">প্রতিটি উত্তরের সাথে প্রমাণ রসিদ থাকে: ব্যবহৃত উৎস, ঝুঁকির মাত্রা এবং তথ্যের ঘাটতি।</string>
+    <string name="chat_use_location">প্রশ্নের সাথে আমার অবস্থান যোগ করুন</string>
+    <string name="chat_thinking">সমুদ্রের তথ্য বিশ্লেষণ করা হচ্ছে…</string>
+
+    <string name="evidence_title">প্রমাণ রসিদ</string>
+    <string name="evidence_why">এই উত্তরটি কেন?</string>
+    <string name="evidence_factors">ঝুঁকির কারণসমূহ</string>
+    <string name="evidence_sources">ব্যবহৃত উৎসসমূহ</string>
+    <string name="evidence_freshness">তথ্যের সতেজতা</string>
+    <string name="evidence_gaps">তথ্য ঘাটতি</string>
+    <string name="evidence_rejected">বিকল্পগুলো কেন বাতিল হলো</string>
+    <string name="evidence_confidence">নির্ভরযোগ্যতা</string>
+    <string name="evidence_validation">যাচাইকরণ</string>
+    <string name="evidence_open_maps">মানচিত্রে খুলুন</string>
+    <string name="evidence_show_on_map">মানচিত্রে দেখান</string>
+    <string name="planner_trace">পরিকল্পনার ধাপ</string>
+
+    <string name="map_check_point">এই স্থান পরীক্ষা করুন</string>
+    <string name="map_my_location">আমার অবস্থান</string>
+    <string name="map_tap_hint">অবস্থা জানতে জলের যেকোনো স্থানে ট্যাপ করুন।</string>
+    <string name="map_conditions">সমুদ্রের অবস্থা</string>
+
+    <string name="route_range">অনুসন্ধানের পরিধি</string>
+    <string name="route_find_safest">নিরাপদ অঞ্চল (দ্রুত স্ক্যান)</string>
+    <string name="route_optimize">অনুকূলিত পথ (A*)</string>
+    <string name="route_candidates">মূল্যায়িত পথসমূহ</string>
+    <string name="route_waypoints">ওয়েপয়েন্ট</string>
+    <string name="route_origin">প্রারম্ভিক বিন্দু</string>
+
+    <string name="monitor_start">নজরদারি শুরু করুন</string>
+    <string name="monitor_stop">নজরদারি বন্ধ করুন</string>
+    <string name="monitor_title">লাইভ সুরক্ষা নজরদারি</string>
+
+    <string name="notification_channel_alert_name">সুরক্ষা সতর্কতা</string>
+    <string name="notification_channel_alert_desc">পরিস্থিতি বিপজ্জনক হলে সতর্কবার্তা</string>
+    <string name="notification_channel_status_name">নজরদারি স্থিতি</string>
+    <string name="notification_channel_status_desc">সুরক্ষা নজরদারি সক্রিয় থাকার বিজ্ঞপ্তি</string>
+
+    <string name="language_select">ভাষা নির্বাচন করুন</string>
+    <string name="language_title">ভাষা / Language</string>
+    <string name="language_desc">আপনার আঞ্চলিক উপকূলীয় ভাষা বেছে নিন</string>
+    <string name="language_saved">ভাষা পরিবর্তিত হয়েছে</string>
+    <string name="reasoning">যুক্তি দেখুন</string>
+    <string name="hide_reasoning">যুক্তি লুকান</string>
+    <string name="vetoed_title">অনুমতি নেই — সমুদ্রে যাবেন না</string>
+    <string name="sources_label">উৎসসমূহ</string>
+    <string name="gaps_label">ঘাটতি</string>
+</resources>

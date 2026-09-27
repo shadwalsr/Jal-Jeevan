@@ -1,0 +1,62 @@
+<resources>
+    <string name="app_name">जल जीवन</string>
+
+    <string name="tab_ask">विचारा</string>
+    <string name="tab_map">नकाशा</string>
+    <string name="tab_route">मार्ग</string>
+    <string name="tab_watch">सुरक्षा</string>
+    <string name="settings">सेटिंग्ज</string>
+    <string name="back">मागे</string>
+
+    <string name="chat_hint">सागरी स्थिती, सुरक्षा किंवा कोठे जावे याबद्दल विचारा</string>
+    <string name="chat_send">पाठवा</string>
+    <string name="chat_new_session">नवीन संभाषण</string>
+    <string name="chat_empty_title">समुद्राबद्दल काहीही विचारा</string>
+    <string name="chat_empty_body">प्रत्येक उत्तरासोबत पुरावा पावती मिळते: वापरलेले स्रोत, धोका गुणांक आणि माहितीतील अंतर.</string>
+    <string name="chat_use_location">प्रश्नासोबत माझे स्थान जोडा</string>
+    <string name="chat_thinking">सागरी माहिती तपासत आहे…</string>
+
+    <string name="evidence_title">पुरावा पावती</string>
+    <string name="evidence_why">हे उत्तर का?</string>
+    <string name="evidence_factors">धोका घटक</string>
+    <string name="evidence_sources">वापरलेले स्रोत</string>
+    <string name="evidence_freshness">माहितीची ताजी स्थिती</string>
+    <string name="evidence_gaps">माहितीतील अंतर</string>
+    <string name="evidence_rejected">इतर पर्याय का नाकारले</string>
+    <string name="evidence_confidence">विश्वासार्हता</string>
+    <string name="evidence_validation">पडताळणी</string>
+    <string name="evidence_open_maps">नకाशात उघडा</string>
+    <string name="evidence_show_on_map">नकाशावर दाखवा</string>
+    <string name="planner_trace">नियोजन टप्पे</string>
+
+    <string name="map_check_point">हा बिंदू तपासा</string>
+    <string name="map_my_location">माझे स्थान</string>
+    <string name="map_tap_hint">स्थिती तपासण्यासाठी पाण्यावर कुठेही टॅप करा.</string>
+    <string name="map_conditions">सागरी स्थिती</string>
+
+    <string name="route_range">शोध त्रिज्या</string>
+    <string name="route_find_safest">सुरक्षित क्षेत्र (जलद स्कॅन)</string>
+    <string name="route_optimize">अनुकूलित मार्ग (A*)</string>
+    <string name="route_candidates">तपासलेले मार्ग</string>
+    <string name="route_waypoints">मार्गबिंदू</string>
+    <string name="route_origin">आरंभ बिंदू</string>
+
+    <string name="monitor_start">निगराणी सुरू करा</string>
+    <string name="monitor_stop">निगराणी थांबवा</string>
+    <string name="monitor_title">थेट सुरक्षा निगराणी</string>
+
+    <string name="notification_channel_alert_name">सुरक्षा सूचना</string>
+    <string name="notification_channel_alert_desc">स्थिती धोकादायक झाल्यास येणाऱ्या सूचना</string>
+    <string name="notification_channel_status_name">निगराणी स्थिती</string>
+    <string name="notification_channel_status_desc">सुरक्षा निगराणी चालू असताना दाखवली जाणारी सूचना</string>
+
+    <string name="language_select">भाषा निवडा</string>
+    <string name="language_title">भाषा / Language</string>
+    <string name="language_desc">तुमची प्रादेशिक किनारपट्टीची भाषा निवडा</string>
+    <string name="language_saved">भाषा बदलली</string>
+    <string name="reasoning">तर्क पहा</string>
+    <string name="hide_reasoning">तर्क लपवा</string>
+    <string name="vetoed_title">परवानगी नाही — समुद्रात जाऊ नका</string>
+    <string name="sources_label">स्रोत</string>
+    <string name="gaps_label">अंतर</string>
+</resources>

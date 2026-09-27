@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "react";
-import { sendChat, type ChatResponse } from "./api";
+import { sendChat, textToSpeech, type ChatResponse } from "./api";
+import { useLanguage } from "./i18n/LanguageContext";
+import { VoiceInputModal } from "./VoiceInputModal";
 
 interface Message {
   role: "user" | "assistant";
@@ -36,18 +38,20 @@ interface Props {
  * progress rule is an elapsed-time estimate and is capped below full for the
  * same reason: it must never appear to announce completion.
  */
-const PIPELINE = [
-  "parse_intent",
-  "resolve_location",
-  "execute_tools · weather · ocean · geo",
-  "synthesize_answer",
-];
 const STEP_MS = 900;
 const ESTIMATED_MS = 5000;
 const MAX_FILL = 0.92;
 
 function ThinkingState() {
+  const { t } = useLanguage();
   const [elapsed, setElapsed] = useState(0);
+
+  const pipeline = [
+    t("pipeline_parse"),
+    t("pipeline_resolve"),
+    t("pipeline_execute"),
+    t("pipeline_synthesize"),
+  ];
 
   useEffect(() => {
     const started = Date.now();
@@ -55,14 +59,14 @@ function ThinkingState() {
     return () => window.clearInterval(id);
   }, []);
 
-  const step = Math.min(Math.floor(elapsed / STEP_MS), PIPELINE.length - 1);
+  const step = Math.min(Math.floor(elapsed / STEP_MS), pipeline.length - 1);
   const fill = Math.min(elapsed / ESTIMATED_MS, MAX_FILL) * 100;
 
   return (
     <div className="reply">
       <div className="thinking">
         <div className="thinking__node" aria-live="polite">
-          {PIPELINE[step]}
+          {pipeline[step]}
         </div>
         <div className="thinking__track">
           <div className="thinking__fill" style={{ width: `${fill}%` }} />
@@ -115,12 +119,24 @@ export default function ChatPanel({
   open,
   onRequestClose,
 }: Props) {
+  const { language, t } = useLanguage();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [sessionId, setSessionId] = useState<string | undefined>(undefined);
   const [loading, setLoading] = useState(false);
   const [showTrace, setShowTrace] = useState<number | null>(null);
+  const [voiceModalOpen, setVoiceModalOpen] = useState(false);
+  const [playingMessageIdx, setPlayingMessageIdx] = useState<number | null>(null);
+  const currentAudioRef = useRef<HTMLAudioElement | null>(null);
   const logRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // Stop audio playback on unmount
+  useEffect(() => {
+    return () => {
+      stopCurrentAudio();
+    };
+  }, []);
 
   // Newest at the bottom, so the log follows the conversation down.
   useEffect(() => {
@@ -128,21 +144,96 @@ export default function ChatPanel({
     if (el) el.scrollTop = el.scrollHeight;
   }, [messages, loading]);
 
-  async function handleSend() {
-    const text = input.trim();
+  const stopCurrentAudio = () => {
+    if (currentAudioRef.current) {
+      currentAudioRef.current.pause();
+      currentAudioRef.current = null;
+    }
+    if (window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+    }
+    setPlayingMessageIdx(null);
+  };
+
+  const playVoiceResponse = async (text: string, languageCode?: string, msgIdx?: number) => {
+    stopCurrentAudio();
+    if (typeof msgIdx === "number") {
+      setPlayingMessageIdx(msgIdx);
+    }
+
+    const lang = languageCode || language.code || "hi-IN";
+
+    try {
+      // 1. Primary: Sarvam AI high-fidelity neural regional voice
+      const ttsData = await textToSpeech(text, lang);
+      if (ttsData.audio_base64) {
+        const audio = new Audio("data:audio/wav;base64," + ttsData.audio_base64);
+        currentAudioRef.current = audio;
+        audio.onended = () => {
+          setPlayingMessageIdx(null);
+          currentAudioRef.current = null;
+        };
+        audio.onerror = () => {
+          fallbackBrowserTTS(text, lang);
+        };
+        await audio.play();
+        return;
+      }
+    } catch (err) {
+      console.warn("[TTS] Sarvam TTS backend failed, falling back to browser speech synthesis:", err);
+    }
+
+    // 2. Fallback: Browser Web Speech API
+    fallbackBrowserTTS(text, lang);
+  };
+
+  const fallbackBrowserTTS = (text: string, langCode: string) => {
+    if (!window.speechSynthesis) {
+      setPlayingMessageIdx(null);
+      return;
+    }
+    try {
+      const clean = text
+        .replace(/\*\*([^*]+)\*\*/g, "$1")
+        .replace(/[*#`_]/g, "")
+        .replace(/\n+/g, ". ")
+        .slice(0, 1000);
+      const utterance = new SpeechSynthesisUtterance(clean);
+      utterance.rate = 0.95;
+      if (langCode && langCode !== "unknown") {
+        utterance.lang = langCode;
+      }
+      utterance.onend = () => setPlayingMessageIdx(null);
+      utterance.onerror = () => setPlayingMessageIdx(null);
+      window.speechSynthesis.speak(utterance);
+    } catch {
+      setPlayingMessageIdx(null);
+    }
+  };
+
+  async function handleSend(overrideText?: string, explicitLang?: string, isVoice: boolean = false) {
+    const text = (typeof overrideText === "string" ? overrideText : input).trim();
     if (!text || loading) return;
     setInput("");
+    stopCurrentAudio();
     setMessages((m) => [...m, { role: "user", text }]);
     setLoading(true);
     try {
-      const resp = await sendChat(text, sessionId, clientLocation);
+      const targetLang = explicitLang || language.code;
+      const resp = await sendChat(text, sessionId, clientLocation, targetLang, isVoice);
       setSessionId(resp.session_id);
+      const newAssistantIndex = messages.length + 1;
       setMessages((m) => [...m, { role: "assistant", text: resp.answer, response: resp }]);
       const data = resp.data as { lat?: number; lon?: number; origin_lat?: number; origin_lon?: number };
       const lat = data.lat ?? data.origin_lat;
       const lon = data.lon ?? data.origin_lon;
       if (typeof lat === "number" && typeof lon === "number") {
         onLocationResolved(lat, lon);
+      }
+
+      // Automatically read out the answer in the regional language if queried via voice!
+      if (isVoice && resp.answer) {
+        playVoiceResponse(resp.answer, resp.language_code || targetLang, newAssistantIndex);
       }
     } catch (err) {
       setMessages((m) => [
@@ -158,6 +249,7 @@ export default function ChatPanel({
     }
   }
 
+
   const hasContent = messages.length > 0 || loading;
 
   return (
@@ -168,9 +260,30 @@ export default function ChatPanel({
     <div className={`chat-widget${open ? "" : " chat-widget--closed"}`} inert={!open}>
       <div className="chat-widget__handle-row">
         <button className="btn chat-widget__hide" onClick={onRequestClose}>
-          Hide — see map
+          {t("hide_map")}
         </button>
       </div>
+
+      {!hasContent && (
+        <div className="chat-log surface" style={{ display: "flex", flexDirection: "column", gap: "8px", padding: "12px 14px", maxHeight: "160px", overflowY: "auto" }}>
+          <div style={{ fontSize: "12px", fontWeight: 600, color: "var(--ink-2)", textTransform: "uppercase", letterSpacing: "0.04em" }}>
+            {t("starter_questions_title")}
+          </div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+            {[t("sample_q1"), t("sample_q2"), t("sample_q3"), t("sample_q4")].map((q, idx) => (
+              <button
+                key={idx}
+                type="button"
+                className="btn"
+                style={{ fontSize: "12px", padding: "5px 10px", textAlign: "left", height: "auto", borderRadius: "14px", lineHeight: 1.3 }}
+                onClick={() => handleSend(q)}
+              >
+                {q}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {hasContent && (
         <div className="chat-log surface" ref={logRef}>
@@ -199,11 +312,10 @@ export default function ChatPanel({
                   <div className="risk-veto">
                     <div className="risk-veto__head">
                       <span className="risk-veto__swatch" />
-                      <span>Not permitted — do not go</span>
+                      <span>{t("vetoed_title")}</span>
                     </div>
                     <div className="risk-veto__reasons">
-                      Vetoed before scoring, so no risk score exists. Scoring only runs on points
-                      that pass the legal and survivability checks.
+                      {t("vetoed_desc")}
                     </div>
                   </div>
                 )}
@@ -230,18 +342,44 @@ export default function ChatPanel({
 
                 {m.response && (
                   <div className="reply__footer">
+                    <button
+                      type="button"
+                      className={`voice-listen-btn ${playingMessageIdx === i ? "voice-listen-btn--playing" : ""}`}
+                      onClick={() => {
+                        if (playingMessageIdx === i) {
+                          stopCurrentAudio();
+                        } else {
+                          playVoiceResponse(m.text, m.response?.language_code || language.code, i);
+                        }
+                      }}
+                      title={playingMessageIdx === i ? "Stop voice readout" : "Listen in regional language"}
+                      aria-label={playingMessageIdx === i ? "Stop voice readout" : "Listen in regional language"}
+                    >
+                      {playingMessageIdx === i ? (
+                        <>
+                          <span>⏹️</span>
+                          <span>Stop</span>
+                        </>
+                      ) : (
+                        <>
+                          <span>🔊</span>
+                          <span>Listen</span>
+                        </>
+                      )}
+                    </button>
+                    <span className="meta-divider" />
                     <span>
-                      {evidence?.sources_used?.length ?? 0} sources
+                      {evidence?.sources_used?.length ?? 0} {t("sources_count")}
                     </span>
                     {(evidence?.data_gaps?.length ?? 0) > 0 && (
                       <>
                         <span className="meta-divider" />
-                        <span>{evidence?.data_gaps.length} gaps</span>
+                        <span>{evidence?.data_gaps.length} {t("gaps_count")}</span>
                       </>
                     )}
                     <span className="meta-divider" />
                     <button className="link-btn" onClick={() => setShowTrace(showTrace === i ? null : i)}>
-                      {showTrace === i ? "Hide reasoning" : "Reasoning"}
+                      {showTrace === i ? t("hide_reasoning") : t("reasoning")}
                     </button>
                     {evidence?.location_maps_url && (
                       <>
@@ -252,7 +390,7 @@ export default function ChatPanel({
                           target="_blank"
                           rel="noopener noreferrer"
                         >
-                          Open in Maps
+                          {t("open_in_maps")}
                         </a>
                       </>
                     )}
@@ -261,7 +399,7 @@ export default function ChatPanel({
 
                 {showTrace === i && m.response && (
                   <div>
-                    <div className="evidence-section__title">Planner trace</div>
+                    <div className="evidence-section__title">{t("planner_trace")}</div>
                     <div className="evidence-section__rule" />
                     <ul className="evidence-list mono" style={{ fontSize: 12 }}>
                       {m.response.trace.map((line, j) => (
@@ -272,7 +410,7 @@ export default function ChatPanel({
                     {(evidence?.factor_lines?.length ?? 0) > 0 && (
                       <>
                         <div className="evidence-section__title" style={{ marginTop: 12 }}>
-                          Risk factors
+                          {t("risk_factors")}
                         </div>
                         <div className="evidence-section__rule" />
                         <ul className="evidence-list mono">
@@ -286,7 +424,7 @@ export default function ChatPanel({
                     {(evidence?.sources_used?.length ?? 0) > 0 && (
                       <>
                         <div className="evidence-section__title" style={{ marginTop: 12 }}>
-                          Sources
+                          {t("sources_label")}
                         </div>
                         <div className="evidence-section__rule" />
                         <ul className="evidence-list mono" style={{ fontSize: 12 }}>
@@ -302,7 +440,7 @@ export default function ChatPanel({
                     {(evidence?.data_gaps?.length ?? 0) > 0 && (
                       <>
                         <div className="evidence-section__title" style={{ marginTop: 12 }}>
-                          Data gaps
+                          {t("data_gaps")}
                         </div>
                         <div className="evidence-section__rule" />
                         <ul className="evidence-list evidence-gaps">
@@ -324,9 +462,10 @@ export default function ChatPanel({
 
       <div className="chat-bar">
         <label htmlFor="chat-input" className="visually-hidden">
-          Ask about marine conditions, safety, or where to go
+          {t("ask_placeholder_default")}
         </label>
         <input
+          ref={inputRef}
           id="chat-input"
           className="chat-bar__input"
           value={input}
@@ -334,15 +473,38 @@ export default function ChatPanel({
           onKeyDown={(e) => e.key === "Enter" && handleSend()}
           placeholder={
             locationStatus === "granted"
-              ? "Ask about conditions, safety, or where to go"
-              : "Ask about conditions, or name a place"
+              ? t("ask_placeholder_gps")
+              : t("ask_placeholder_default")
           }
           disabled={loading}
         />
-        <button className="chat-bar__send" onClick={handleSend} disabled={loading || !input.trim()}>
-          Send
+        <button
+          type="button"
+          className="chat-bar__mic"
+          onClick={() => setVoiceModalOpen(true)}
+          disabled={loading}
+          title={t("voice_input")}
+          aria-label={t("speak_query")}
+        >
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+            <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z" />
+            <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z" />
+          </svg>
+        </button>
+        <button className="chat-bar__send" onClick={() => handleSend()} disabled={loading || !input.trim()}>
+          {t("send")}
         </button>
       </div>
+
+      <VoiceInputModal
+        open={voiceModalOpen}
+        onClose={() => setVoiceModalOpen(false)}
+        onTranscriptReady={(transcript, langCode) => handleSend(transcript, langCode, true)}
+        onInputReady={(transcript) => {
+          setInput(transcript);
+          setTimeout(() => inputRef.current?.focus(), 50);
+        }}
+      />
     </div>
   );
 }

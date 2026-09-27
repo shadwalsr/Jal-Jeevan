@@ -44,12 +44,12 @@ import asyncio
 # results instead of keeping whatever sources already answered. Raising the
 # ceiling avoids it here rather than fixing it — the durable fix is for each
 # agent to bound its own sub-sources and always return what it collected.
-AGENT_TIMEOUT_S = 40
+AGENT_TIMEOUT_S = 300
 
 
 async def run_with_timeout(coro, agent_name: str, empty_state):
     """
-    Await `coro`, but never longer than AGENT_TIMEOUT_S. On timeout return
+    Await `coro`, with generous AGENT_TIMEOUT_S ceiling. On timeout return
     `empty_state` marked with an honest gap note rather than raising — a
     missing source is reported as missing (`missing: [...]`), never silently
     filled in and never allowed to take the whole request down with it.
@@ -62,3 +62,9 @@ async def run_with_timeout(coro, agent_name: str, empty_state):
             empty_state.partial = True
         empty_state.missing = [timeout_note]
         return empty_state
+    except Exception as exc:
+        if hasattr(empty_state, "partial"):
+            empty_state.partial = True
+        empty_state.missing = [f"{agent_name} failed: {type(exc).__name__}: {exc}"]
+        return empty_state
+

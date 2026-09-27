@@ -3,68 +3,74 @@ package com.jaljeev.marine.ui.theme
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Typography
-import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 
-// Marine console palette. Deep navy ground, one blue for interaction, one
-// teal for "safe" - the same teal the risk scale uses for LOW, so the app
-// never says "good" in a colour the risk scale does not recognise.
-val Navy900 = Color(0xFF0B1B2B)
-val Navy800 = Color(0xFF12293D)
-val Navy700 = Color(0xFF1A3550)
-val Navy600 = Color(0xFF2C4A66)
-val Blue400 = Color(0xFF4F8FE0)
-val Teal400 = Color(0xFF3ECFA8)
-val Amber400 = Color(0xFFE3A53D)
-val Red400 = Color(0xFFE3675A)
-val Ink100 = Color(0xFFE6EEF6)
-val Ink300 = Color(0xFFA9BDD1)
+// Paper nautical chart palette matching frontend/src/app.css:
+// 1. Color is reserved ENTIRELY for risk and exclusions. The interface is black, white and grey.
+// 2. Monospace & tabular measurements.
+// 3. Hairline borders, no shadows, no colored bubble cards.
+val Paper = Color(0xFFFFFFFF)
+val Ink = Color(0xFF111111)
+val Ink2 = Color(0xFF5A5A5A)
+val Field = Color(0xFFF6F6F4)
+val Rule = Color(0x1F111111)        // rgba(17, 17, 17, 0.12)
+val RuleHeavy = Color(0x47111111)   // rgba(17, 17, 17, 0.28)
 
-/**
- * One dark scheme, on purpose - not a light/dark pair.
- *
- * The screen this app is read on is a phone in daylight glare or at night on
- * open water, and the risk colours (teal / yellow / amber / red) were picked
- * for contrast against this navy ground. Re-tuning them for a light surface
- * would mean two palettes to keep honest, and a MODERATE that looks different
- * depending on the phone's theme setting.
- */
-private val JalJeevColors = darkColorScheme(
-    primary = Blue400,
-    onPrimary = Navy900,
-    primaryContainer = Navy700,
-    onPrimaryContainer = Ink100,
-    secondary = Teal400,
-    onSecondary = Navy900,
-    secondaryContainer = Navy700,
-    onSecondaryContainer = Ink100,
-    tertiary = Amber400,
-    onTertiary = Navy900,
-    background = Navy900,
-    onBackground = Ink100,
-    surface = Navy800,
-    onSurface = Ink100,
-    surfaceVariant = Navy700,
-    onSurfaceVariant = Ink300,
-    outline = Navy600,
-    outlineVariant = Navy700,
-    error = Red400,
-    onError = Navy900,
-    errorContainer = Color(0xFF4A1E22),
-    onErrorContainer = Color(0xFFFFDAD6),
+// Risk scale hues
+val RiskLow = Color(0xFF3ECFA8)
+val RiskModerate = Color(0xFFD9C94F)
+val RiskHigh = Color(0xFFE3A53D)
+val RiskExtreme = Color(0xFFE3675A)
+val Exclusion = Color(0xFFC2185B)
+val PortBlue = Color(0xFF4F8FE0)
+
+// Text-safe darkenings of the same hues — used for type on white ground
+val RiskLowInk = Color(0xFF0E7C63)
+val RiskModerateInk = Color(0xFF6B6410)
+val RiskHighInk = Color(0xFF8A5A05)
+val RiskExtremeInk = Color(0xFFA8342A)
+val ExclusionInk = Color(0xFFA3145E)
+
+private val JalJeevColors = lightColorScheme(
+    primary = Ink,
+    onPrimary = Paper,
+    primaryContainer = Field,
+    onPrimaryContainer = Ink,
+    secondary = PortBlue,
+    onSecondary = Paper,
+    secondaryContainer = Field,
+    onSecondaryContainer = Ink,
+    tertiary = RiskHighInk,
+    onTertiary = Paper,
+    tertiaryContainer = Color(0xFFFFF8EE),
+    onTertiaryContainer = RiskHighInk,
+    background = Paper,
+    onBackground = Ink,
+    surface = Paper,
+    onSurface = Ink,
+    surfaceVariant = Field,
+    onSurfaceVariant = Ink2,
+    outline = Rule,
+    outlineVariant = RuleHeavy,
+    error = Exclusion,
+    onError = Paper,
+    errorContainer = Color(0xFFFDF2F4),
+    onErrorContainer = ExclusionInk,
 )
 
 private val JalJeevTypography = Typography(
-    titleLarge = TextStyle(fontSize = 22.sp, fontWeight = FontWeight.SemiBold, lineHeight = 28.sp),
-    titleMedium = TextStyle(fontSize = 17.sp, fontWeight = FontWeight.SemiBold, lineHeight = 24.sp),
-    bodyLarge = TextStyle(fontSize = 16.sp, lineHeight = 24.sp),
-    bodyMedium = TextStyle(fontSize = 14.sp, lineHeight = 21.sp),
-    labelLarge = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.Medium),
-    labelMedium = TextStyle(fontSize = 12.sp, fontWeight = FontWeight.Medium, letterSpacing = 0.4.sp),
+    titleLarge = TextStyle(fontSize = 20.sp, fontWeight = FontWeight.SemiBold, lineHeight = 26.sp, letterSpacing = (-0.2).sp),
+    titleMedium = TextStyle(fontSize = 16.sp, fontWeight = FontWeight.SemiBold, lineHeight = 22.sp),
+    bodyLarge = TextStyle(fontSize = 15.sp, lineHeight = 22.sp),
+    bodyMedium = TextStyle(fontSize = 14.sp, lineHeight = 20.sp),
+    labelLarge = TextStyle(fontSize = 13.sp, fontWeight = FontWeight.Medium),
+    labelMedium = TextStyle(fontSize = 12.sp, fontWeight = FontWeight.Normal, letterSpacing = 0.2.sp),
+    labelSmall = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Normal, fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace),
 )
 
 @Composable

@@ -4,6 +4,7 @@ import android.Manifest
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -111,15 +112,16 @@ fun MapScreen(modifier: Modifier = Modifier) {
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .fillMaxWidth()
-                    .fillMaxHeight(0.55f),
+                    .fillMaxHeight(0.55f)
+                    .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(topStart = 4.dp, topEnd = 4.dp)),
                 color = MaterialTheme.colorScheme.background,
-                shape = RoundedCornerShape(topStart = 18.dp, topEnd = 18.dp),
-                tonalElevation = 3.dp,
+                shape = RoundedCornerShape(topStart = 4.dp, topEnd = 4.dp),
+                tonalElevation = 0.dp,
             ) {
                 Column(
                     Modifier
                         .verticalScroll(rememberScrollState())
-                        .padding(12.dp),
+                        .padding(14.dp),
                     verticalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
                     if (ui.locationDenied) {
@@ -155,9 +157,10 @@ private fun Pill(text: String) {
         color = MaterialTheme.colorScheme.onSurface,
         modifier = Modifier
             .background(
-                MaterialTheme.colorScheme.surface.copy(alpha = 0.92f),
-                RoundedCornerShape(20.dp),
+                MaterialTheme.colorScheme.surface.copy(alpha = 0.95f),
+                RoundedCornerShape(3.dp),
             )
-            .padding(horizontal = 12.dp, vertical = 8.dp),
+            .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(3.dp))
+            .padding(horizontal = 10.dp, vertical = 6.dp),
     )
 }

@@ -50,7 +50,7 @@ MOSDAC_CACHE_DIR.mkdir(parents=True, exist_ok=True)
 CACHE_MAX_AGE_HOURS = 24
 
 # Timeout for individual HTTP requests to MOSDAC (seconds).
-REQUEST_TIMEOUT = 30
+REQUEST_TIMEOUT = 60.0
 
 
 def _is_configured() -> bool:

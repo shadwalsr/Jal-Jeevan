@@ -1,0 +1,62 @@
+<resources>
+    <string name="app_name">ଜଳ ଜୀବନ</string>
+
+    <string name="tab_ask">ପଚାରନ୍ତୁ</string>
+    <string name="tab_map">ମାନଚିତ୍ର</string>
+    <string name="tab_route">ପଥ</string>
+    <string name="tab_watch">ସୁରକ୍ଷା</string>
+    <string name="settings">ସେଟିଙ୍ଗସ୍</string>
+    <string name="back">ପଛକୁ</string>
+
+    <string name="chat_hint">ସମୁଦ୍ରର ଅବସ୍ଥା, ସୁରକ୍ଷା କିମ୍ବା କେଉଁଠାକୁ ଯିବେ ପଚାରନ୍ତୁ</string>
+    <string name="chat_send">ପଠାନ୍ତୁ</string>
+    <string name="chat_new_session">ନୂତନ ବାର୍ତ୍ତାଳାପ</string>
+    <string name="chat_empty_title">ସମୁଦ୍ର ବିଷୟରେ ଯାହା ପଚାରିବାକୁ ଚାହାଁନ୍ତି ପଚାରନ୍ତୁ</string>
+    <string name="chat_empty_body">ପ୍ରତ୍ୟେକ ଉତ୍ତର ସହିତ ପ୍ରମାଣ ରସିଦ ମିଳିଥାଏ: ବ୍ୟବହୃତ ଉତ୍ସ, ବିପଦ ସ୍କୋର ଏବଂ ତଥ୍ୟ ଅଭାବ।</string>
+    <string name="chat_use_location">ପ୍ରଶ୍ନ ସହିତ ମୋର ସ୍ଥାନ ଯୋଡ଼ନ୍ତୁ</string>
+    <string name="chat_thinking">ସମୁଦ୍ର ତଥ୍ୟ ଯାଞ୍ଚ ହେଉଛି…</string>
+
+    <string name="evidence_title">ପ୍ରମାଣ ରସିଦ</string>
+    <string name="evidence_why">ଏହି ଉତ୍ତର କାହିଁକି?</string>
+    <string name="evidence_factors">ବିପଦ କାରକ</string>
+    <string name="evidence_sources">ବ୍ୟବହୃତ ଉତ୍ସଗୁଡ଼ିକ</string>
+    <string name="evidence_freshness">ତଥ୍ୟ ନୂତନତା</string>
+    <string name="evidence_gaps">ତଥ୍ୟ ଅଭାବ</string>
+    <string name="evidence_rejected">ଅନ୍ୟ ବିକଳ୍ପ କାହିଁକି ପ୍ରତ୍ୟାଖ୍ୟାନ କରାଗଲା</string>
+    <string name="evidence_confidence">ବିଶ୍ୱାସନୀୟତା</string>
+    <string name="evidence_validation">ପ୍ରମାଣୀକରଣ</string>
+    <string name="evidence_open_maps">ମାନଚିତ୍ରରେ ଖୋଲନ୍ତୁ</string>
+    <string name="evidence_show_on_map">ମାନଚିତ୍ରରେ ଦେଖନ୍ତୁ</string>
+    <string name="planner_trace">ଯୋଜନା ପର୍ଯ୍ୟାୟ</string>
+
+    <string name="map_check_point">ଏହି ସ୍ଥାନ ଯାଞ୍ଚ କରନ୍ତୁ</string>
+    <string name="map_my_location">ମୋର ସ୍ଥାନ</string>
+    <string name="map_tap_hint">ଅବସ୍ଥା ଜାଣିବା ପାଇଁ ପାଣି ଉପରେ ଯେକୌଣସି ସ୍ଥାନରେ ଟ୍ୟାପ୍ କରନ୍ତୁ।</string>
+    <string name="map_conditions">ସମୁଦ୍ର ଅବସ୍ଥା</string>
+
+    <string name="route_range">ଅନୁସନ୍ଧାନ ପରିସୀମା</string>
+    <string name="route_find_safest">ନିରାପଦ ଅଞ୍ଚଳ (ଦ୍ରୁତ ସ୍କାନ୍)</string>
+    <string name="route_optimize">ଅପ୍ଟିମାଇଜ୍ଡ ପଥ (A*)</string>
+    <string name="route_candidates">ଯାଞ୍ଚ ହୋଇଥିବା ପଥ</string>
+    <string name="route_waypoints">ୱେପଏଣ୍ଟ</string>
+    <string name="route_origin">ଆରମ୍ଭ ବିନ୍ଦୁ</string>
+
+    <string name="monitor_start">ନଜର ରଖିବା ଆରମ୍ଭ କରନ୍ତୁ</string>
+    <string name="monitor_stop">ନଜର ରଖିବା ବନ୍ଦ କରନ୍ତୁ</string>
+    <string name="monitor_title">ସିଧାସଳଖ ସୁରକ୍ଷା ନଜର</string>
+
+    <string name="notification_channel_alert_name">ସୁରକ୍ଷା ସତର୍କତା</string>
+    <string name="notification_channel_alert_desc">ସ୍ଥିତି ବିପଦପୂର୍ଣ୍ଣ ହେଲେ ସତର୍କ ସୂଚନା</string>
+    <string name="notification_channel_status_name">ନିରୀକ୍ଷଣ ସ୍ଥିତି</string>
+    <string name="notification_channel_status_desc">ସୁରକ୍ଷା ନିରୀକ୍ଷଣ ଚାଲିଥିବା ସମୟରେ ବିଜ୍ଞପ୍ତି</string>
+
+    <string name="language_select">ଭାଷା ବାଛନ୍ତୁ</string>
+    <string name="language_title">ଭାଷା / Language</string>
+    <string name="language_desc">ଆପଣଙ୍କର ଆଞ୍ଚଳିକ ଉପକୂଳ ଭାଷା ବାଛନ୍ତୁ</string>
+    <string name="language_saved">ଭାଷା ପରିବର୍ତ୍ତନ ହୋଇଛି</string>
+    <string name="reasoning">କାରଣ ଦେଖନ୍ତୁ</string>
+    <string name="hide_reasoning">କାରଣ ଲୁଚାନ୍ତୁ</string>
+    <string name="vetoed_title">ଅନୁମତି ନାହିଁ — ସମୁଦ୍ରକୁ ଯାଆନ୍ତୁ ନାହିଁ</string>
+    <string name="sources_label">ଉତ୍ସ</string>
+    <string name="gaps_label">ଅଭାବ</string>
+</resources>

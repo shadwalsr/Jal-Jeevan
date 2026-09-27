@@ -22,4 +22,3 @@ dependencyResolutionManagement {
 
 rootProject.name = "JalJeev"
 include(":app")
-include(":app")

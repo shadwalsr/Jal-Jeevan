@@ -61,38 +61,14 @@ _client = Groq(api_key=settings.GROQ_API_KEY) if settings.GROQ_API_KEY else None
 # executor + wait_for pattern as every other external adapter (CLAUDE.md
 # gotcha #2) — don't remove that wrapping just because Groq is fast; a
 # future slow response should still fail gracefully, not block the loop.
-LLM_TIMEOUT_S = 20
+LLM_TIMEOUT_S = 60
 
-# Synthesis gets its own, shorter budget. Intent parsing has no fully
-# equivalent fallback in terms of nuance (rule_based's regex parser can miss
-# a phrasing the LLM would catch), so it's worth waiting the full 20s and
-# retrying once. Synthesis is different: synthesize_answer_rule_based reads
-# the SAME EvidenceReceipt fields the LLM prompt is given and is already a
-# perfectly safe, correct answer (see core philosophy — it cannot
-# hallucinate by construction). Waiting up to 2x20s+0.5s for a strictly
-# "nicer-sounding" phrasing before falling back to an equally correct
-# template was the single biggest contributor to "the answer takes forever"
-# reports (28 Aug 2026) — most of that wait bought nothing, because the
-# eventual answer was the template anyway. A tighter budget and no retry
-# means a genuinely slow/hung Groq call surfaces the good fallback in ~8s
-# instead of ~40s, and a healthy call (measured ~0.6-2s) is unaffected.
-SYNTHESIS_LLM_TIMEOUT_S = 8
+# Synthesis gets its own budget — raised from 8s to 60s so LLM synthesis
+# never prematurely aborts due to Groq latency jitter.
+SYNTHESIS_LLM_TIMEOUT_S = 60
 
-# Ceiling for the two multi-step searches (radial route, port-to-port
-# passage). Each internally bounds its own expensive work — route_agent caps
-# full-detail verification at two phases, passage_agent budgets its H3 cell
-# count — but neither had an outer ceiling on the /chat path, so a slow
-# source could still park the request until the endpoint's own 115s fired.
-# Raised from 60s (5 Sep 2026): the fast scan is quick (~1-7s) but
-# verification runs the full Ocean Agent (Copernicus login + dataset open)
-# for the best candidate, and that consistently takes 30-40s cold. 60s left
-# zero margin for Phase 2 expansion or slightly slow networks — measured
-# timeouts on every "safest zone" query for Puri. 90s fits alongside the
-# worst-case LLM stages (~20s parse + 90s here + 8s synthesis = 118s) with
-# the endpoint's 115s ceiling — but the per-agent 40s cap inside
-# verification already bounds the real work, so 90s is headroom, not a
-# licence for slow calls.
-SEARCH_TIMEOUT_S = 90
+# Ceiling for multi-step searches (radial route, port-to-port passage).
+SEARCH_TIMEOUT_S = 300
 
 
 async def _call_llm(prompt: str, retries: int = 1, timeout_s: float = LLM_TIMEOUT_S) -> tuple[str | None, str | None]:
@@ -128,6 +104,8 @@ class PlannerState(TypedDict, total=False):
     session_id: str | None
     client_lat: float | None  # browser geolocation, last-resort fallback — see resolve_location
     client_lon: float | None
+    language: str | None  # UI selected language code: hi, ta, te, ml, bn, gu, mr, od, kn, en
+    language_code: str | None  # BCP-47 resolved language code (e.g. od-IN, hi-IN, ta-IN)
     intent: dict
     lat: float | None
     lon: float | None
@@ -136,6 +114,57 @@ class PlannerState(TypedDict, total=False):
     evidence: dict
     trace: list[str]
     answer: str
+
+
+LANGUAGE_NAMES = {
+    "hi": "Hindi (हिन्दी)",
+    "ta": "Tamil (தமிழ்)",
+    "te": "Telugu (తెలుగు)",
+    "ml": "Malayalam (മലയാളം)",
+    "bn": "Bengali (বাংলা)",
+    "gu": "Gujarati (ગુજરાતી)",
+    "mr": "Marathi (मराठी)",
+    "od": "Odia (ଓଡ଼ିଆ)",
+    "kn": "Kannada (ಕನ್ನಡ)",
+    "en": "English",
+}
+
+LANGUAGE_CODE_BCP47 = {
+    "od": "od-IN", "or": "od-IN",
+    "hi": "hi-IN",
+    "ta": "ta-IN",
+    "te": "te-IN",
+    "ml": "ml-IN",
+    "bn": "bn-IN",
+    "gu": "gu-IN",
+    "mr": "mr-IN",
+    "kn": "kn-IN",
+    "en": "en-IN",
+}
+
+
+def detect_regional_script(text: str) -> str | None:
+    """Detect Indian regional language script from text characters."""
+    for ch in text:
+        code = ord(ch)
+        if 0x0B00 <= code <= 0x0B7F:
+            return "od"  # Odia
+        elif 0x0B80 <= code <= 0x0BFF:
+            return "ta"  # Tamil
+        elif 0x0C00 <= code <= 0x0C7F:
+            return "te"  # Telugu
+        elif 0x0C80 <= code <= 0x0CFF:
+            return "kn"  # Kannada
+        elif 0x0D00 <= code <= 0x0D7F:
+            return "ml"  # Malayalam
+        elif 0x0980 <= code <= 0x09FF:
+            return "bn"  # Bengali
+        elif 0x0A80 <= code <= 0x0AFF:
+            return "gu"  # Gujarati
+        elif 0x0900 <= code <= 0x097F:
+            return "hi"  # Hindi / Devanagari (Marathi/Hindi)
+    return None
+
 
 
 INTENT_PROMPT = """You are the intent parser for JalJeev, a marine decision-support system for
@@ -185,15 +214,18 @@ SYNTHESIS_PROMPT = """You are JalJeev, a marine safety assistant for Indian fish
 maritime traders. Match your language to who is asking: a fisherman wants plain, practical words;
 a sailor or a ship's officer expects the normal terms of their trade (bearings, nautical miles,
 legs, ETA, under-keel clearance) and is not helped by having them avoided. Answer the
-user's question using the evidence data below — do not invent or estimate any number that
+user's question using ONLY the evidence receipt below — do not invent or estimate any number that
 isn't in it. If a value is missing, say so plainly instead of guessing. Cite the data source and
 how recent it is when giving a specific number. Keep the answer concise, practical, and in plain
 language the person asking would use themselves.
 
 COMMUNICATION & TONE RULES:
-- NEVER quote internal software terms or developer jargon like "evidence receipt", "the receipt", "JSON", "tool_results", "timed out after 90s", or system error strings.
-- Speak naturally, respectfully, and practically. If certain satellite telemetry is delayed or unavailable, explain plainly that real-time satellite readings for that offshore zone are currently unavailable, report any known weather/wind/wave values, and give sound precautionary advice.
-- Always be honest about what is verified vs unverified.
+- Never quote internal developer terminology like "evidence receipt", "the receipt", "JSON", "tool_results", or raw exception messages.
+- Speak naturally and helpfully. If data for a particular sensor is missing, state it simply and plainly (e.g. "Real-time cyclone tracking from IMD is currently not available; verify with local port radio").
+- For each item in data_gaps, relay the wording EXACTLY as provided — do not reword, summarize, or rephrase these gap descriptions into phrases like "still being calculated" or "bathymetry for the exact point". If an item notes to ask again in ~30 seconds (first-time computation), tell the user that directly.
+
+LANGUAGE INSTRUCTION:
+{language_instruction}
 
 If the receipt describes a passage (leg-by-leg factor lines with bearings and ETAs), give the
 legs in order, state the total distance and ETA, and name the WORST leg explicitly — a passage is
@@ -365,38 +397,16 @@ async def execute_tools(state: PlannerState) -> PlannerState:
                 timeout=SEARCH_TIMEOUT_S,
             )
         except asyncio.TimeoutError:
-            trace.append(f"Route Agent: timed out after {SEARCH_TIMEOUT_S}s — falling back to immediate point check")
-            try:
-                from app.agents.route_agent import quick_check
-                quick_risk = await quick_check(lat, lon, vessel)
-                fallback_evidence = {
-                    "recommendation_summary": f"Full offshore area search took longer than usual; evaluated conditions near {state.get('location_name') or f'{lat:.2f}, {lon:.2f}'}",
-                    "risk_score": quick_risk.risk_score,
-                    "risk_level": quick_risk.risk_level,
-                    "factor_lines": quick_risk.explanation,
-                    "sources_used": ["Open-Meteo Marine & Weather", "GEBCO Bathymetry"],
-                    "data_freshness": {},
-                    "data_gaps": ["Deep satellite ocean analysis timed out; using atmospheric and wave model"],
-                    "rejected_alternatives": [],
-                    "confidence_statement": "Rapid coastal/marine forecast available. Exercise standard vigilance.",
-                    "location_lat": lat,
-                    "location_lon": lon,
-                }
-                return {
-                    **state,
-                    "tool_results": quick_risk.model_dump(),
-                    "evidence": fallback_evidence,
-                    "trace": trace,
-                }
-            except Exception as _fb_err:
-                return {
-                    **state,
-                    "tool_results": {
-                        "error": "Marine data sources are momentarily slow. Please verify with local port authorities."
-                    },
-                    "evidence": {},
-                    "trace": trace,
-                }
+            trace.append(f"Route Agent: timed out after {SEARCH_TIMEOUT_S}s")
+            return {
+                **state,
+                "tool_results": {
+                    "error": f"Searching for a safe zone took longer than {SEARCH_TIMEOUT_S}s. "
+                             "Try again shortly — the ocean data sources may be slow right now."
+                },
+                "evidence": {},
+                "trace": trace,
+            }
         trace.append(f"Route Agent: evaluated {len(result.candidates_evaluated)} candidates, {'found' if result.found_safe_zone else 'did not find'} a safe zone")
         evidence = build_receipt_for_route(result)
         trace.append("Evidence Agent: built reasoning receipt (sources, factors, rejected alternatives)")
@@ -464,14 +474,49 @@ async def synthesize_answer(state: PlannerState) -> PlannerState:
         else None
     )
 
+    raw_lang = (state.get("language") or "").strip().lower()
+    if raw_lang.startswith("or"):
+        raw_lang = "od"
+    elif "-" in raw_lang:
+        raw_lang = raw_lang.split("-")[0]
+
+    detected_script = detect_regional_script(state["user_message"])
+    if detected_script and (raw_lang == "en" or raw_lang not in LANGUAGE_NAMES):
+        raw_lang = detected_script
+
+    if raw_lang in LANGUAGE_NAMES and raw_lang != "en":
+        target_name = LANGUAGE_NAMES[raw_lang]
+        resolved_bcp47 = LANGUAGE_CODE_BCP47.get(raw_lang, f"{raw_lang}-IN")
+        lang_instr = (
+            f"CRITICAL MANDATORY REQUIREMENT: The user's query is in {target_name}. "
+            f"You MUST formulate, structure, and write your ENTIRE final answer completely and fluently in {target_name} script! "
+            f"Do NOT answer in English. Translate all navigational guidance, sea state, wave heights, wind, risk factors, advice, and summaries into natural, fluent {target_name}. "
+            f"Use practical, natural regional terms that an Indian coastal fisherman or boat operator understands."
+        )
+    else:
+        resolved_bcp47 = "en-IN"
+        lang_instr = (
+            "If the user's message is written in an Indian regional language (e.g. Hindi, Tamil, Telugu, Malayalam, Bengali, Gujarati, Marathi, Odia, Kannada), "
+            "you MUST formulate and write your entire response in that same language and script. Otherwise, reply in English."
+        )
+
     if not _client:
         if memory_write is not None:
             await memory_write
         trace.append("Planner: GROQ_API_KEY not configured — using template-based answer synthesis")
-        return {**state, "answer": synthesize_answer_rule_based(evidence if isinstance(evidence, dict) else {}), "trace": trace}
+        return {
+            **state,
+            "answer": synthesize_answer_rule_based(evidence if isinstance(evidence, dict) else {}),
+            "language_code": resolved_bcp47,
+            "trace": trace,
+        }
 
     llm_call = _call_llm(
-        SYNTHESIS_PROMPT.format(message=state["user_message"], evidence=json.dumps(evidence, default=str)),
+        SYNTHESIS_PROMPT.format(
+            message=state["user_message"],
+            evidence=json.dumps(evidence, default=str),
+            language_instruction=lang_instr,
+        ),
         retries=0,
         timeout_s=SYNTHESIS_LLM_TIMEOUT_S,
     )
@@ -481,9 +526,15 @@ async def synthesize_answer(state: PlannerState) -> PlannerState:
         text, reason = await llm_call
     if text is None:
         trace.append(f"Planner: LLM call failed for synthesis ({reason}) — falling back to template-based answer")
-        return {**state, "answer": synthesize_answer_rule_based(evidence if isinstance(evidence, dict) else {}), "trace": trace}
+        return {
+            **state,
+            "answer": synthesize_answer_rule_based(evidence if isinstance(evidence, dict) else {}),
+            "language_code": resolved_bcp47,
+            "trace": trace,
+        }
 
-    return {**state, "answer": text.strip(), "trace": trace}
+    return {**state, "answer": text.strip(), "language_code": resolved_bcp47, "trace": trace}
+
 
 
 def build_graph():
@@ -510,6 +561,7 @@ async def run_planner(
     session_id: str | None = None,
     client_lat: float | None = None,
     client_lon: float | None = None,
+    language: str | None = None,
 ) -> PlannerState:
     global _compiled_graph
     if _compiled_graph is None:
@@ -520,6 +572,7 @@ async def run_planner(
             "session_id": session_id,
             "client_lat": client_lat,
             "client_lon": client_lon,
+            "language": language,
             "trace": [],
         }
     )

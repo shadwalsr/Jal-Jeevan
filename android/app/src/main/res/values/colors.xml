@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="window_background">#0B1B2B</color>
+    <color name="window_background">#FFFFFF</color>
     <color name="ic_launcher_background">#0B1B2B</color>
+    <color name="mic_active_red">#E53935</color>
+    <color name="jaljeev_maritime_blue">#0B2545</color>
+    <color name="text_primary">#111111</color>
+    <color name="text_secondary">#5A5A5A</color>
+    <color name="safe_green">#1B8755</color>
+    <color name="white">#FFFFFF</color>
 </resources>

@@ -1,9 +1,16 @@
 package com.jaljeev.marine.ui.nav
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.ui.unit.dp
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Chat
+import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.Route
 import androidx.compose.material.icons.filled.Settings
@@ -13,12 +20,16 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
@@ -29,6 +40,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.jaljeev.marine.R
 import com.jaljeev.marine.ui.chat.ChatScreen
+import com.jaljeev.marine.ui.common.LanguageSelectionDialog
 import com.jaljeev.marine.ui.map.MapScreen
 import com.jaljeev.marine.ui.monitor.MonitorScreen
 import com.jaljeev.marine.ui.route.RouteScreen
@@ -56,55 +68,99 @@ fun JalJeevNavHost() {
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route
     val onSettings = currentRoute == SETTINGS_ROUTE
+    var showLanguageDialog by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        stringResource(
-                            if (onSettings) R.string.settings
-                            else TABS.firstOrNull { it.route == currentRoute }?.labelRes ?: R.string.app_name
+            Column {
+                TopAppBar(
+                    title = {
+                        Text(
+                            stringResource(
+                                if (onSettings) R.string.settings
+                                else TABS.firstOrNull { it.route == currentRoute }?.labelRes ?: R.string.app_name
+                            ),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold,
                         )
-                    )
-                },
-                navigationIcon = {
-                    if (onSettings) {
-                        IconButton(onClick = { navController.popBackStack() }) {
+                    },
+                    navigationIcon = {
+                        if (onSettings) {
+                            IconButton(onClick = { navController.popBackStack() }) {
+                                Icon(
+                                    Icons.AutoMirrored.Filled.ArrowBack,
+                                    contentDescription = stringResource(R.string.back),
+                                )
+                            }
+                        }
+                    },
+                    actions = {
+                        IconButton(onClick = { showLanguageDialog = true }) {
                             Icon(
-                                Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = stringResource(R.string.back),
+                                Icons.Filled.Language,
+                                contentDescription = stringResource(R.string.language_select),
+                                tint = MaterialTheme.colorScheme.onSurface,
                             )
                         }
-                    }
-                },
-                actions = {
-                    if (!onSettings) {
-                        IconButton(onClick = { navController.navigate(SETTINGS_ROUTE) }) {
-                            Icon(Icons.Filled.Settings, contentDescription = stringResource(R.string.settings))
+                        if (!onSettings) {
+                            IconButton(onClick = { navController.navigate(SETTINGS_ROUTE) }) {
+                                Icon(Icons.Filled.Settings, contentDescription = stringResource(R.string.settings))
+                            }
                         }
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(),
-            )
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.surface,
+                        titleContentColor = MaterialTheme.colorScheme.onSurface,
+                        navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
+                        actionIconContentColor = MaterialTheme.colorScheme.onSurface,
+                    ),
+                )
+                androidx.compose.foundation.layout.Box(
+                    Modifier
+                        .fillMaxWidth()
+                        .height(1.dp)
+                        .background(MaterialTheme.colorScheme.outline)
+                )
+            }
         },
         bottomBar = {
-            NavigationBar {
-                TABS.forEach { tab ->
-                    NavigationBarItem(
-                        selected = currentRoute == tab.route,
-                        onClick = {
-                            navController.navigate(tab.route) {
-                                // Tabs are peers: keep one entry per tab and
-                                // preserve each tab's own scroll/selection.
-                                popUpTo(navController.graph.findStartDestination().id) { saveState = true }
-                                launchSingleTop = true
-                                restoreState = true
-                            }
-                        },
-                        icon = { Icon(tab.icon, contentDescription = null) },
-                        label = { Text(stringResource(tab.labelRes)) },
-                    )
+            Column {
+                androidx.compose.foundation.layout.Box(
+                    Modifier
+                        .fillMaxWidth()
+                        .height(1.dp)
+                        .background(MaterialTheme.colorScheme.outline)
+                )
+                NavigationBar(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    tonalElevation = 0.dp,
+                ) {
+                    TABS.forEach { tab ->
+                        NavigationBarItem(
+                            selected = currentRoute == tab.route,
+                            onClick = {
+                                navController.navigate(tab.route) {
+                                    popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+                                    launchSingleTop = true
+                                    restoreState = true
+                                }
+                            },
+                            icon = { Icon(tab.icon, contentDescription = null) },
+                            label = {
+                                Text(
+                                    stringResource(tab.labelRes),
+                                    style = MaterialTheme.typography.labelSmall,
+                                )
+                            },
+                            colors = androidx.compose.material3.NavigationBarItemDefaults.colors(
+                                selectedIconColor = MaterialTheme.colorScheme.onSurface,
+                                selectedTextColor = MaterialTheme.colorScheme.onSurface,
+                                unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                                unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                                indicatorColor = MaterialTheme.colorScheme.surfaceVariant,
+                            ),
+                        )
+                    }
                 }
             }
         },
@@ -120,5 +176,9 @@ fun JalJeevNavHost() {
             composable("watch") { MonitorScreen() }
             composable(SETTINGS_ROUTE) { SettingsScreen() }
         }
+    }
+
+    if (showLanguageDialog) {
+        LanguageSelectionDialog(onDismiss = { showLanguageDialog = false })
     }
 }

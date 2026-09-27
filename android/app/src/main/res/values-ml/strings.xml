@@ -1,0 +1,62 @@
+<resources>
+    <string name="app_name">ജൽ ജീവൻ</string>
+
+    <string name="tab_ask">ചോദിക്കുക</string>
+    <string name="tab_map">മാപ്പ്</string>
+    <string name="tab_route">റൂട്ട്</string>
+    <string name="tab_watch">സുരക്ഷ</string>
+    <string name="settings">ക്രമീകരണങ്ങൾ</string>
+    <string name="back">പിന്നിലേക്ക്</string>
+
+    <string name="chat_hint">കടൽ അവസ്ഥ, സുരക്ഷ, അല്ലെങ്കിൽ എങ്ങോട്ട് പോകണം എന്ന് ചോദിക്കുക</string>
+    <string name="chat_send">അയക്കുക</string>
+    <string name="chat_new_session">പുതിയ സംഭാഷണം</string>
+    <string name="chat_empty_title">കടലിനെക്കുറിച്ച് എന്തും ചോദിക്കാം</string>
+    <string name="chat_empty_body">ഓരോ ഉത്തരത്തിനൊപ്പവും തെളിവ് രസീത് ലഭിക്കും: ഉപയോഗിച്ച സ്രോതസ്സുകൾ, റിസ്ക് സ്കോർ, വിവര വിടവുകൾ.</string>
+    <string name="chat_use_location">ചോദ്യത്തോടൊപ്പം എന്റെ ലൊക്കേഷൻ ചേർക്കുക</string>
+    <string name="chat_thinking">കാലാവസ്ഥ വിവരങ്ങൾ ശേഖരിക്കുന്നു…</string>
+
+    <string name="evidence_title">തെളിവ് രസീത്</string>
+    <string name="evidence_why">എന്തുകൊണ്ട് ഈ ഉത്തരം?</string>
+    <string name="evidence_factors">അപകടസാധ്യതാ ഘടകങ്ങൾ</string>
+    <string name="evidence_sources">ഉപയോഗിച്ച സ്രോതസ്സുകൾ</string>
+    <string name="evidence_freshness">ഡാറ്റയുടെ കൃത്യത</string>
+    <string name="evidence_gaps">വിവര വിടവുകൾ</string>
+    <string name="evidence_rejected">മറ്റു വഴികൾ എന്തുകൊണ്ട് നിരസിച്ചു</string>
+    <string name="evidence_confidence">വിശ്വാസ്യത</string>
+    <string name="evidence_validation">സാധൂകരണം</string>
+    <string name="evidence_open_maps">മാപ്പിൽ തുറക്കുക</string>
+    <string name="evidence_show_on_map">മാപ്പിൽ കാണിക്കുക</string>
+    <string name="planner_trace">ആസൂത്രണ ഘട്ടങ്ങൾ</string>
+
+    <string name="map_check_point">ഈ പോയിന്റ് പരിശോധിക്കുക</string>
+    <string name="map_my_location">എന്റെ സ്ഥാനം</string>
+    <string name="map_tap_hint">സ്ഥിതി അറിയാൻ വെള്ളത്തിൽ എവിടെയെങ്കിലും ടാപ്പ് ചെയ്യുക.</string>
+    <string name="map_conditions">കടൽ അവസ്ഥ</string>
+
+    <string name="route_range">തിരയൽ പരിധി</string>
+    <string name="route_find_safest">സുരക്ഷിത മേഖല (ദ്രുത സ്കാൻ)</string>
+    <string name="route_optimize">ഒപ്റ്റിമൈസ് ചെയ്ത റൂട്ട് (A*)</string>
+    <string name="route_candidates">പരിശോധിച്ച വഴികൾ</string>
+    <string name="route_waypoints">വേപോയിന്റുകൾ</string>
+    <string name="route_origin">തുടക്ക സ്ഥാനം</string>
+
+    <string name="monitor_start">നിരീക്ഷണം തുടങ്ങുക</string>
+    <string name="monitor_stop">നിരീക്ഷണം നിർത്തുക</string>
+    <string name="monitor_title">തത്സമയ സുരക്ഷാ നിരീക്ഷണം</string>
+
+    <string name="notification_channel_alert_name">സുരക്ഷാ മുന്നറിയിപ്പുകൾ</string>
+    <string name="notification_channel_alert_desc">കടൽ അപകടകരമാകുമ്പോൾ ഉള്ള മുന്നറിയിപ്പുകൾ</string>
+    <string name="notification_channel_status_name">നിരീക്ഷണ നില</string>
+    <string name="notification_channel_status_desc">സുരക്ഷാ നിരീക്ഷണം നടക്കുമ്പോൾ ഉള്ള അറിയിപ്പ്</string>
+
+    <string name="language_select">ഭാഷ തിരഞ്ഞെടുക്കുക</string>
+    <string name="language_title">ഭാഷ / Language</string>
+    <string name="language_desc">തീരദേശ ഭാഷ തിരഞ്ഞെടുക്കുക</string>
+    <string name="language_saved">ഭാഷ മാറ്റി</string>
+    <string name="reasoning">കാരണങ്ങൾ കാണുക</string>
+    <string name="hide_reasoning">കാരണങ്ങൾ മറയ്ക്കുക</string>
+    <string name="vetoed_title">അനുമതിയില്ല — കടലിൽ പോകരുത്</string>
+    <string name="sources_label">സ്രോതസ്സുകൾ</string>
+    <string name="gaps_label">വിടവുകൾ</string>
+</resources>

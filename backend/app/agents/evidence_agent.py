@@ -37,10 +37,39 @@ def _capped_rejections(reasons: list[str]) -> list[str]:
     return kept
 
 
+def _clean_gaps(raw_gaps: list[str]) -> list[str]:
+    """Sanitise raw data-gap strings into concise, user-facing labels.
+
+    These cleaned strings go into the EvidenceReceipt's data_gaps list, which
+    is serialised verbatim into the synthesis LLM prompt.  The LLM is
+    instructed to relay each gap item EXACTLY as written — so these must read
+    as finished user-facing sentences, not adapter debug text.
+
+    Previous verbose versions (e.g. "Tide prediction is being computed for
+    this point — it will be ready in about 30 seconds") were still being
+    paraphrased by the LLM into jargon like "Tide information (still being
+    calculated)".  Keeping the messages short and direct reduces that risk.
+    """
+    cleaned: list[str] = []
+    for gap in raw_gaps:
+        lower = gap.lower()
+        if "computing" in lower or "being computed" in lower:
+            cleaned.append("Tide data: ask again in about 30 seconds (first-time computation in progress)")
+        elif "eot20 model files not found" in lower:
+            cleaned.append("Tide data: prediction model not installed on this server")
+        elif "no gebco tile covers" in lower:
+            cleaned.append("Depth/bathymetry: not yet available for this area")
+        elif "unavailable" in lower and "bathymetry" in lower:
+            cleaned.append("Depth/bathymetry: not yet available for this area")
+        else:
+            cleaned.append(gap)
+    return cleaned
+
+
 def build_receipt_for_state(state: FusedMarineState, decision_id: str | None = None) -> EvidenceReceipt:
     sources = sorted(set(state.weather.sources_used) | set(state.ocean.sources_used))
     freshness = {**state.weather.data_freshness, **state.ocean.data_freshness}
-    gaps = state.weather.missing + state.ocean.missing + state.geo.missing
+    gaps = _clean_gaps(state.weather.missing + state.ocean.missing + state.geo.missing)
 
     if state.risk.hard_constraints.vetoed:
         summary = f"Rejected — {'; '.join(state.risk.hard_constraints.reasons)}"
@@ -51,12 +80,39 @@ def build_receipt_for_state(state: FusedMarineState, decision_id: str | None = N
     if state.validation.issues:
         confidence = "VALIDATION FLAGGED THIS RESULT — " + "; ".join(state.validation.issues)
 
+    factor_lines = list(state.risk.explanation)
+    obs = []
+    if state.weather.temperature_2m_c is not None:
+        obs.append(f"Temperature: {state.weather.temperature_2m_c}°C")
+    if state.weather.wind_speed_ms is not None:
+        wind_kts = round(state.weather.wind_speed_ms * 1.94384, 1)
+        wind_str = f"Wind: {state.weather.wind_speed_ms} m/s ({wind_kts} kts)"
+        if state.weather.wind_direction_deg is not None:
+            wind_str += f" from {state.weather.wind_direction_deg}°"
+        if state.weather.wind_gust_ms:
+            gust_kts = round(state.weather.wind_gust_ms * 1.94384, 1)
+            wind_str += f", gusts {gust_kts} kts"
+        obs.append(wind_str)
+    if state.weather.precipitation_probability is not None:
+        obs.append(f"Precipitation: {state.weather.precipitation_probability}%")
+    if state.ocean.significant_wave_height_m is not None:
+        wave_str = f"Wave height: {state.ocean.significant_wave_height_m}m"
+        if state.ocean.wave_period_s:
+            wave_str += f" ({state.ocean.wave_period_s}s period)"
+        obs.append(wave_str)
+    if state.ocean.tide_height_m is not None:
+        obs.append(f"Tide: {state.ocean.tide_height_m}m ({state.ocean.tide_state or 'current'})")
+    if state.ocean.sst_c is not None:
+        obs.append(f"Sea surface temp: {state.ocean.sst_c}°C")
+    if obs:
+        factor_lines.append("Observed conditions: " + "; ".join(obs))
+
     return EvidenceReceipt(
         decision_id=decision_id,
         recommendation_summary=summary,
         risk_score=state.risk.risk_score,
         risk_level=state.risk.risk_level,
-        factor_lines=state.risk.explanation,
+        factor_lines=factor_lines,
         sources_used=sources,
         data_freshness=freshness,
         data_gaps=gaps,

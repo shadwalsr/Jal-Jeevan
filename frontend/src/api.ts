@@ -13,6 +13,8 @@ export interface ChatResponse {
   evidence: EvidenceReceipt;
   decision_id: string;
   session_id: string;
+  language_code?: string;
+  is_voice?: boolean;
 }
 
 export interface EvidenceReceipt {
@@ -226,15 +228,33 @@ async function getJSON<T>(path: string, params: Record<string, string | number>)
 export function sendChat(
   message: string,
   sessionId?: string,
-  clientLocation?: { lat: number; lon: number } | null
+  clientLocation?: { lat: number; lon: number } | null,
+  language?: string,
+  isVoice?: boolean
 ): Promise<ChatResponse> {
   return postJSON<ChatResponse>("/chat", {
     message,
     session_id: sessionId,
     client_lat: clientLocation?.lat,
     client_lon: clientLocation?.lon,
+    language,
+    is_voice: isVoice ?? false,
   });
 }
+
+export interface TTSResponse {
+  audio_base64: string;
+  language_code: string;
+  format: string;
+}
+
+export function textToSpeech(text: string, languageCode?: string): Promise<TTSResponse> {
+  return postJSON<TTSResponse>("/speech/tts", {
+    text,
+    language_code: languageCode || "hi-IN",
+  });
+}
+
 
 // vesselClass is omitted rather than defaulted on every call: the backend
 // treats an absent class as the original 8m fishing boat, and sending an

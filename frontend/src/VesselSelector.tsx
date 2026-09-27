@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { getVesselClasses, type VesselClass } from "./api";
+import { useLanguage } from "./i18n/LanguageContext";
 
 interface Props {
   value: string | null;
@@ -9,11 +10,6 @@ interface Props {
 // Order the groups the way the problem statement reads them, rather than
 // whatever order the backend dict happens to serialise in.
 const GROUP_ORDER = ["fisherman", "sailor", "trader"];
-const GROUP_LABELS: Record<string, string> = {
-  fisherman: "Fishing",
-  sailor: "Sailing",
-  trader: "Trade & commercial",
-};
 
 /**
  * Vessel picker, populated from GET /marine/vessel-classes.
@@ -31,6 +27,7 @@ const GROUP_LABELS: Record<string, string> = {
  * for another, without having to ask.
  */
 export default function VesselSelector({ value, onChange }: Props) {
+  const { t } = useLanguage();
   const [groups, setGroups] = useState<Record<string, VesselClass[]>>({});
   const [note, setNote] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -62,10 +59,17 @@ export default function VesselSelector({ value, onChange }: Props) {
     ...Object.keys(groups).filter((g) => !GROUP_ORDER.includes(g)),
   ];
 
+  const groupLabel = (group: string) => {
+    if (group === "fisherman") return t("group_fishing");
+    if (group === "sailor") return t("group_sailing");
+    if (group === "trader") return t("group_trader");
+    return group;
+  };
+
   return (
     <div className="vessel-selector surface">
       <label className="vessel-selector__label" htmlFor="vessel-class">
-        Vessel
+        {t("vessel_class")}
       </label>
       <select
         id="vessel-class"
@@ -76,9 +80,9 @@ export default function VesselSelector({ value, onChange }: Props) {
           onChange(next, all.find((v) => v.vessel_class === next) ?? null);
         }}
       >
-        <option value="">Default — small fishing boat (8m)</option>
+        <option value="">{t("vessel_default")}</option>
         {orderedGroups.map((group) => (
-          <optgroup key={group} label={GROUP_LABELS[group] ?? group}>
+          <optgroup key={group} label={groupLabel(group)}>
             {groups[group].map((v) => (
               <option key={v.vessel_class} value={v.vessel_class}>
                 {v.vessel_name}
@@ -91,23 +95,23 @@ export default function VesselSelector({ value, onChange }: Props) {
       {selected && (
         <div className="vessel-selector__spec mono">
           <div className="vessel-selector__spec-row">
-            <span>Draft</span>
+            <span>{t("spec_draft")}</span>
             <span>{selected.draft_m.toFixed(1)} m</span>
           </div>
           <div className="vessel-selector__spec-row">
-            <span>Max safe wave</span>
+            <span>{t("spec_max_wave")}</span>
             <span>{selected.max_safe_wave_m.toFixed(1)} m</span>
           </div>
           <div className="vessel-selector__spec-row">
-            <span>Wind limit</span>
+            <span>{t("spec_wind_limit")}</span>
             <span>{selected.wind_threshold_ms.toFixed(0)} m/s</span>
           </div>
           <div className="vessel-selector__spec-row">
-            <span>Range</span>
+            <span>{t("spec_range")}</span>
             <span>{selected.operational_range_km.toLocaleString()} km</span>
           </div>
           <div className="vessel-selector__spec-row">
-            <span>Cruise</span>
+            <span>{t("spec_cruise")}</span>
             <span>{selected.cruise_speed_kn.toFixed(1)} kn</span>
           </div>
           {selected.propulsion !== "motor" && (

@@ -1,0 +1,62 @@
+<resources>
+    <string name="app_name">జల్ జీవన్</string>
+
+    <string name="tab_ask">అడగండి</string>
+    <string name="tab_map">మ్యాప్</string>
+    <string name="tab_route">రూట్</string>
+    <string name="tab_watch">రక్షణ</string>
+    <string name="settings">సెట్టింగ్స్</string>
+    <string name="back">వెనుకకు</string>
+
+    <string name="chat_hint">సముద్ర పరిస్థితులు, భద్రత లేదా ఎక్కడికి వెళ్లాలో అడగండి</string>
+    <string name="chat_send">పంపండి</string>
+    <string name="chat_new_session">కొత్త సంభాషణ</string>
+    <string name="chat_empty_title">సముద్రం గురించి ఏదైనా అడగండి</string>
+    <string name="chat_empty_body">ప్రతి సమాధానం సాక్ష్యాధారాలతో వస్తుంది: మూలాలు, రిస్క్ స్కోరు మరియు డేటా వివరాలు.</string>
+    <string name="chat_use_location">ప్రశ్నతో నా లొకేషన్ జోడించండి</string>
+    <string name="chat_thinking">సముద్ర పరిస్థితులు గమనిస్తోంది…</string>
+
+    <string name="evidence_title">సాక్ష్యాల రసీదు</string>
+    <string name="evidence_why">ఈ సమాధానం ఎందుకు?</string>
+    <string name="evidence_factors">ప్రమాద కారకాలు</string>
+    <string name="evidence_sources">ఉపయోగించిన మూలాలు</string>
+    <string name="evidence_freshness">డేటా సమయం</string>
+    <string name="evidence_gaps">డేటా ఖాళీలు</string>
+    <string name="evidence_rejected">ప్రత్యామ్నాయాలు ఎందుకు తిరస్కరించబడ్డాయి</string>
+    <string name="evidence_confidence">విశ్వసనీయత</string>
+    <string name="evidence_validation">ధృవీకరణ</string>
+    <string name="evidence_open_maps">మ్యాప్స్‌లో తెరవండి</string>
+    <string name="evidence_show_on_map">మ్యాప్‌లో చూపించు</string>
+    <string name="planner_trace">ప్రణాళిక దశలు</string>
+
+    <string name="map_check_point">ఈ ప్రాంతాన్ని తనిఖీ చేయండి</string>
+    <string name="map_my_location">నా స్థానం</string>
+    <string name="map_tap_hint">పరిస్థితులు తెలుసుకోవడానికి నీటిపై ఎక్కడైనా ట్యాప్ చేయండి.</string>
+    <string name="map_conditions">సముద్ర పరిస్థితులు</string>
+
+    <string name="route_range">శోధన పరిధి</string>
+    <string name="route_find_safest">సురక్షిత ప్రాంతం (త్వరిత స్కాన్)</string>
+    <string name="route_optimize">ఆప్టిమైజ్ చేసిన రూట్ (A*)</string>
+    <string name="route_candidates">పరిశీలించిన మార్గాలు</string>
+    <string name="route_waypoints">వే పాయింట్లు</string>
+    <string name="route_origin">ప్రారంభ స్థానం</string>
+
+    <string name="monitor_start">పర్యవేక్షణ ప్రారంభించండి</string>
+    <string name="monitor_stop">పర్యవేక్షణ ఆపండి</string>
+    <string name="monitor_title">ప్రత్యక్ష భద్రతా పర్యవేక్షణ</string>
+
+    <string name="notification_channel_alert_name">భద్రతా హెచ్చరికలు</string>
+    <string name="notification_channel_alert_desc">సముద్రం ప్రమాదకరంగా మారినప్పుడు హెచ్చరికలు</string>
+    <string name="notification_channel_status_name">పర్యవేక్షణ స్థితి</string>
+    <string name="notification_channel_status_desc">భద్రతా పర్యవేక్షణ నడుస్తున్నప్పుడు నోటిఫికేషన్</string>
+
+    <string name="language_select">భాషను ఎంచుకోండి</string>
+    <string name="language_title">భాష / Language</string>
+    <string name="language_desc">మీ తీర ప్రాంత భాషను ఎంచుకోండి</string>
+    <string name="language_saved">భాష నవీకరించబడింది</string>
+    <string name="reasoning">కారణాలు చూడండి</string>
+    <string name="hide_reasoning">కారణాలు దాచండి</string>
+    <string name="vetoed_title">అనుమతి లేదు — సముద్రంలోకి వెళ్లవద్దు</string>
+    <string name="sources_label">మూలాలు</string>
+    <string name="gaps_label">ఖాళీలు</string>
+</resources>

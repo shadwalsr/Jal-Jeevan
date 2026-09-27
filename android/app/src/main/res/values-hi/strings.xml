@@ -1,0 +1,62 @@
+<resources>
+    <string name="app_name">जल जीवन</string>
+
+    <string name="tab_ask">पूछें</string>
+    <string name="tab_map">नक्शा</string>
+    <string name="tab_route">मार्ग</string>
+    <string name="tab_watch">सुरक्षा</string>
+    <string name="settings">सेटिंग्स</string>
+    <string name="back">पीछे</string>
+
+    <string name="chat_hint">समुद्री स्थिति, सुरक्षा या कहाँ जाना है पूछें</string>
+    <string name="chat_send">भेजें</string>
+    <string name="chat_new_session">नई बातचीत</string>
+    <string name="chat_empty_title">समुद्र के बारे में कुछ भी पूछें</string>
+    <string name="chat_empty_body">प्रत्येक उत्तर के साथ प्रमाण रसीद मिलती है: उपयोग किए गए स्रोत, जोखिम स्कोर और डेटा अंतराल।</string>
+    <string name="chat_use_location">प्रश्न के साथ मेरा स्थान जोड़ें</string>
+    <string name="chat_thinking">डेटा और मौसम की जांच कर रहा है…</string>
+
+    <string name="evidence_title">प्रमाण रसीद</string>
+    <string name="evidence_why">यह उत्तर क्यों?</string>
+    <string name="evidence_factors">जोखिम कारक</string>
+    <string name="evidence_sources">उपयोग किए गए स्रोत</string>
+    <string name="evidence_freshness">डेटा ताजगी</string>
+    <string name="evidence_gaps">डेटा अंतराल</string>
+    <string name="evidence_rejected">विकल्प क्यों अस्वीकार किए गए</string>
+    <string name="evidence_confidence">विश्वास स्तर</string>
+    <string name="evidence_validation">सत्यापन</string>
+    <string name="evidence_open_maps">मानचित्र में खोलें</string>
+    <string name="evidence_show_on_map">मानचित्र पर देखें</string>
+    <string name="planner_trace">नियोजक चरण</string>
+
+    <string name="map_check_point">इस बिंदु की जांच करें</string>
+    <string name="map_my_location">मेरा स्थान</string>
+    <string name="map_tap_hint">स्थिति देखने के लिए पानी पर कहीं भी टैप करें।</string>
+    <string name="map_conditions">समुद्री स्थिति</string>
+
+    <string name="route_range">खोज दायरा</string>
+    <string name="route_find_safest">सुरक्षित क्षेत्र (त्वरित स्कैन)</string>
+    <string name="route_optimize">अनुकूलित मार्ग (A*)</string>
+    <string name="route_candidates">मूल्यांकित विकल्प</string>
+    <string name="route_waypoints">मार्ग बिंदु</string>
+    <string name="route_origin">प्रारंभिक बिंदु</string>
+
+    <string name="monitor_start">निगरानी शुरू करें</string>
+    <string name="monitor_stop">निगरानी बंद करें</string>
+    <string name="monitor_title">लाइव सुरक्षा निगरानी</string>
+
+    <string name="notification_channel_alert_name">सुरक्षा चेतावनियां</string>
+    <string name="notification_channel_alert_desc">जब आपके आसपास की स्थिति असुरक्षित हो तो चेतावनी</string>
+    <string name="notification_channel_status_name">निगरानी स्थिति</string>
+    <string name="notification_channel_status_desc">सुरक्षा निगरानी सक्रिय रहने के दौरान सूचना</string>
+
+    <string name="language_select">भाषा चुनें</string>
+    <string name="language_title">भाषा / Language</string>
+    <string name="language_desc">अपनी पसंदीदा क्षेत्रीय तटीय भाषा चुनें</string>
+    <string name="language_saved">भाषा अपडेट हो गई</string>
+    <string name="reasoning">तर्क देखें</string>
+    <string name="hide_reasoning">तर्क छुपाएं</string>
+    <string name="vetoed_title">अनुमति नहीं है — समुद्र में न जाएं</string>
+    <string name="sources_label">स्रोत</string>
+    <string name="gaps_label">डेटा अंतराल</string>
+</resources>

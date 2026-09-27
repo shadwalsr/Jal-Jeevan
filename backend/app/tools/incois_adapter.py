@@ -24,11 +24,9 @@ async def get_incois_wave_forecast(lat: float, lon: float) -> dict:
     every value must carry source + timestamp).
     """
     try:
-        import urllib3
-        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
         e = ERDDAP(server=settings.INCOIS_ERDDAP_URL, protocol="griddap")
+        # TODO(data-eng): confirm actual dataset_id from the ERDDAP catalog.
         e.dataset_id = "incois_osf_wave"
-        e.requests_kwargs = {"timeout": 4, "verify": False}
         loop = asyncio.get_running_loop()
 
         def _fetch_incois():
@@ -40,7 +38,7 @@ async def get_incois_wave_forecast(lat: float, lon: float) -> dict:
             e.constraints["longitude<="] = lon + 0.25
             return e.to_xarray()
 
-        ds = await asyncio.wait_for(loop.run_in_executor(network_executor, _fetch_incois), timeout=5)
+        ds = await loop.run_in_executor(network_executor, _fetch_incois)
         return {
             "source": "INCOIS OSF (ERDDAP)",
             "fetched_at": datetime.now(timezone.utc).isoformat(),

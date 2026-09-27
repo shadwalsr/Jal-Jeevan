@@ -1,0 +1,14 @@
+<resources>
+    <!-- Bilingual: Hindi (primary) + English (secondary) on same line -->
+    <string name="voice_idle_hint">दबाएं और बोलें\nHold to Speak</string>
+    <string name="voice_listening">सुन रहा है…\nListening…</string>
+    <string name="voice_processing">समझ रहा है…\nProcessing…</string>
+    <string name="voice_send">भेजें / Send</string>
+    <string name="voice_cancel">रद्द करें / Cancel</string>
+    <string name="voice_too_short">बहुत छोटा — थोड़ा और बोलें\nToo short — speak a bit more</string>
+    <string name="voice_error_network">नेटवर्क नहीं — दोबारा कोशिश करें\nNo network — please retry</string>
+    <string name="voice_error_mic">माइक्रोफोन उपलब्ध नहीं\nMicrophone unavailable</string>
+    <string name="voice_permission_rationale">आवाज़ पहचान के लिए माइक्रोफोन चाहिए\nMicrophone needed for voice input</string>
+    <string name="voice_auto_detect">भाषा अपने आप / Auto Detect</string>
+    <string name="voice_tts_readback_fail">TTS not available for this language</string>
+</resources>

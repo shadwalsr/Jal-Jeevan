@@ -27,7 +27,7 @@ from app.core.config import settings
 logger = logging.getLogger(__name__)
 
 BASE_URL = "https://api.protectedplanet.net/v4"
-REQUEST_TIMEOUT = 30
+REQUEST_TIMEOUT = 60.0
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 CACHE_DIR = REPO_ROOT / "data" / "raw" / "boundaries" / "protected_planet" / "api_cache"
