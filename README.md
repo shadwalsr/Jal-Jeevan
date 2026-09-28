@@ -60,16 +60,6 @@ PWA offline mode, voice I/O (Odia/Tamil/Hindi), proactive alerts, 5 stakeholder 
 
 ---
 
-## YOUR ROLE (what only you can do)
-
-I (Claude) can write the code, agents, ML pipeline, and UI. I **cannot**:
-
-1. **Register accounts / obtain API keys** — these require a real identity, email verification, and sometimes institutional affiliation (KIIT). I can't do this for you.
-2. **Make product/scope decisions** that trade off timeline vs. features (e.g., "do we build 10 languages or 3 well").
-3. **Provide domain sign-off** — confirm that risk thresholds, vessel classes, and PFZ interpretation make sense to an actual fisherman/domain reviewer.
-4. **Run the actual SIH submission logistics** — team registration, PPT/video upload, presenting to judges.
-5. **Test voice/language output** for correctness (I can generate it, but a native speaker should verify Odia/Tamil TTS output makes sense).
-
 ### Concretely, your action items this week:
 
 | # | Action | Where | Time to activate |
