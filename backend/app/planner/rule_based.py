@@ -319,7 +319,16 @@ def synthesize_answer_rule_based(evidence: dict) -> str:
     into readable text directly, no LLM. Cannot hallucinate: every line is a
     direct field read, nothing is generated or inferred."""
     if not evidence:
-        return "I don't have enough information to answer that — no location was resolved for this question."
+        return "I don't have enough information to answer that — no location was specified or resolved for this question. Please name a port (e.g. 'near Kochi' or 'off Vizag') or allow location access."
+
+    if evidence.get("error"):
+        err = str(evidence["error"])
+        if "location" in err.lower():
+            return (
+                "Please specify a port or coastal location in your question (e.g. 'Where is the safest place to fish within 30km of Kochi?' "
+                "or 'around Visakhapatnam'), or allow location access in your browser."
+            )
+        return err
 
     lines = []
     summary = evidence.get("recommendation_summary")

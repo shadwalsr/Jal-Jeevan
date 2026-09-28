@@ -158,7 +158,7 @@ function AppContent() {
 
       <div className="chat-dock">
         <ChatPanel
-          clientLocation={clientLocation}
+          clientLocation={clientLocation ?? { lat, lon }}
           locationStatus={locationStatus}
           open={chatOpen}
           onRequestClose={() => setChatOpen(false)}

@@ -334,7 +334,12 @@ async def execute_tools(state: PlannerState) -> PlannerState:
 
     if lat is None or lon is None:
         trace.append("No location resolved — cannot call marine agents")
-        return {**state, "tool_results": {"error": "No location provided or resolved"}, "evidence": {}, "trace": trace}
+        return {
+            **state,
+            "tool_results": {"error": "No location provided or resolved"},
+            "evidence": {"error": "No location provided or resolved"},
+            "trace": trace,
+        }
 
     vessel = resolve_vessel(intent.get("vessel_class"), length_m=intent.get("vessel_length_m"))
     intent_type = intent.get("intent_type", "current_conditions")
