@@ -8,7 +8,7 @@ import kotlinx.serialization.json.JsonObject
  * Wire models mirroring backend/app/models/schemas.py one-for-one.
  *
  * Two rules this file follows deliberately, both from the repo's core
- * philosophy (see CLAUDE.md):
+ * philosophy (see agent.md):
  *
  *  1. Every field the backend declares nullable is nullable here too. A
  *     missing value means the source did not answer, and the UI must say so
@@ -60,7 +60,7 @@ data class OceanState(
     @SerialName("sst_anomaly") val sstAnomaly: Boolean = false,
     @SerialName("sst_anomaly_z_score") val sstAnomalyZScore: Double? = null,
     /**
-     * The single-year (2023) baseline caveat. CLAUDE.md is explicit that this
+     * The single-year (2023) baseline caveat. agent.md is explicit that this
      * note must never be dropped by a UI that surfaces the anomaly, so
      * OceanDetails renders it verbatim whenever it is present.
      */

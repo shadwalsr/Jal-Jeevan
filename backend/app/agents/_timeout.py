@@ -17,7 +17,7 @@ Same agents, same data, opposite behaviour — purely because one path had the
 timeout and the other did not. It lives here now so both callers import ONE
 implementation, the same way check_hard_constraints is shared between the
 risk, route and passage paths rather than being reimplemented per caller
-(see CLAUDE.md's conventions, and gotcha #3 on why the ceiling has to be
+(see agent.md's conventions, and gotcha #3 on why the ceiling has to be
 per-agent rather than wrapped around the whole gather).
 """
 import asyncio

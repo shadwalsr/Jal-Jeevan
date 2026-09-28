@@ -429,7 +429,7 @@ async def get_passage_plan(
         # Longer ceiling than /optimize-route's 90s: a passage scores a
         # corridor AND re-scores the chosen path against per-leg forecast
         # hours. Still bounded — an unbounded planning request is how you
-        # get a request that looks like a hang (CLAUDE.md gotcha #4).
+        # get a request that looks like a hang (agent.md gotcha #4).
         result = await asyncio.wait_for(
             plan_passage(
                 vessel,

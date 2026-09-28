@@ -53,7 +53,7 @@ async def get_sst(lat: float, lon: float) -> dict:
         await cache_set("sst", lat, lon, result)
         return result
     except Exception as exc:  # pragma: no cover - network dependent
-        # Never swallow silently — see CLAUDE.md gotcha #4 (a real ~20s
+        # Never swallow silently — see agent.md gotcha #4 (a real ~20s
         # "hang" once turned out to be a masked 429 found only by logging
         # type+message). Bare str(exc) can be empty (e.g. TimeoutError).
         print(f"[noaa_oisst_adapter] {type(exc).__name__}: {exc}")

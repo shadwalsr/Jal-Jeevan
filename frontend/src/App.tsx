@@ -17,7 +17,7 @@ import "./app.css";
 
 // Verified real demo point — 15km offshore Visakhapatnam. Puri's exact
 // coastline sits on a genuinely very shallow river-delta shelf and will
-// correctly hit the draft-vs-depth veto (see CLAUDE.md gotcha #8).
+// correctly hit the draft-vs-depth veto (see agent.md gotcha #8).
 const DEFAULT_LAT = 17.65;
 const DEFAULT_LON = 83.35;
 

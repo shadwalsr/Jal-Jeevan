@@ -13,7 +13,7 @@ flat two-colour chart (land / water), there is no reason to render raster
 imagery through a tile pipeline at all — a small vector polygon layer,
 downloaded once and committed, removes the dependency entirely. Offline
 after the JS bundle loads once, same philosophy as the project's own
-"graceful degradation over hanging" principle (CLAUDE.md) applied to the
+"graceful degradation over hanging" principle (agent.md) applied to the
 map itself.
 
 WHY CLIPPED, NOT THE WHOLE WORLD

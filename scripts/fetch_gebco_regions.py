@@ -6,7 +6,7 @@ scripts/" for adding new regions — this is that script. It did not exist
 before 27 Aug 2026, which is why the four original tiles could not be
 extended without redoing the work by hand.
 
-WHY SMALL TILES (CLAUDE.md gotcha #7)
+WHY SMALL TILES (agent.md gotcha #7)
 ------------------------------------
 A single large OPeNDAP request (25x35 degrees, ~101MB) was observed to
 silently truncate mid-transfer and zero-fill the remainder — no error

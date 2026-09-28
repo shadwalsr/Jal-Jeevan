@@ -82,7 +82,7 @@ def _open_read_close(dataset_id: str, variables: list[str], lat: float, lon: flo
        `.mean().values` — xarray is lazy. So the previous shape of this code
        did the network fetch ON THE EVENT LOOP while only the cheap open
        call was in the executor, quietly stalling every other coroutine
-       (CLAUDE.md gotcha #2, hiding one level deeper than usual).
+       (agent.md gotcha #2, hiding one level deeper than usual).
     3. Closing promptly, rather than waiting for GC, is what keeps memory
        bounded — see MAX_CONCURRENT_DATASET_OPENS.
 
@@ -182,7 +182,7 @@ async def get_physics_subset(lat: float, lon: float) -> dict:
         _circuit_breaker.record_success(_BREAKER_NAME)
         return result
     except Exception as exc:  # pragma: no cover - network dependent
-        # Never swallow silently — see CLAUDE.md gotcha #4. Also: str(exc)
+        # Never swallow silently — see agent.md gotcha #4. Also: str(exc)
         # is empty for asyncio.TimeoutError, which made every timeout here
         # show up as an unhelpful blank "error": "" with no way to tell a
         # timeout from any other failure — always include the exception type.

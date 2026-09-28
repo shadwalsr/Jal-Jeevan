@@ -58,7 +58,7 @@ _client = Groq(api_key=settings.GROQ_API_KEY) if settings.GROQ_API_KEY else None
 # with a much more generous free tier and genuinely fast inference
 # (~0.6s measured for a trivial call). The SDK call is still
 # synchronous/blocking though, so it's wrapped in the same dedicated
-# executor + wait_for pattern as every other external adapter (CLAUDE.md
+# executor + wait_for pattern as every other external adapter (agent.md
 # gotcha #2) — don't remove that wrapping just because Groq is fast; a
 # future slow response should still fail gracefully, not block the loop.
 LLM_TIMEOUT_S = 60
@@ -418,7 +418,7 @@ async def execute_tools(state: PlannerState) -> PlannerState:
         return {**state, "tool_results": result.model_dump(), "evidence": evidence.model_dump(), "trace": trace}
 
     trace.append("Executing plan: Weather Agent, Ocean Agent, Geo Agent, Risk Agent, Validation Agent")
-    # Per-agent ceilings, NOT a bare gather (CLAUDE.md gotcha #3). This used
+    # Per-agent ceilings, NOT a bare gather (agent.md gotcha #3). This used
     # to be an unbounded `asyncio.gather(...)`, which is why /chat returned a
     # 504 on coordinates that /marine/state answered fine in 25s: the REST
     # path wrapped each agent in this timeout and the planner did not, so a

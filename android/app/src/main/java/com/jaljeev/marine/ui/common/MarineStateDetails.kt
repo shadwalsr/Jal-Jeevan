@@ -64,7 +64,7 @@ fun MarineStateDetails(
             if (o.sstAnomaly) {
                 Flag("SST anomaly (z = ${o.sstAnomalyZScore?.let { String.format("%.2f", it) } ?: "?"})")
             }
-            // CLAUDE.md is explicit that the single-year-baseline caveat must
+            // agent.md is explicit that the single-year-baseline caveat must
             // never be dropped by a UI surfacing the anomaly. Rendered
             // verbatim, exactly as the Anomaly Agent wrote it.
             o.sstAnomalyNote?.takeIf { it.isNotBlank() }?.let { note ->

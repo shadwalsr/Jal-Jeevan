@@ -5,7 +5,7 @@ dependency: no quota, no network call, no variance between runs.
 
 Used automatically whenever the LLM isn't configured OR a live call to it
 fails (quota exhausted, network down, etc. — exactly the failure modes hit
-repeatedly during development, see CLAUDE.md). This makes the LLM a
+repeatedly during development, see agent.md). This makes the LLM a
 genuinely optional enhancement layer for richer free-form phrasing, not a
 hard dependency for the system to answer a question at all — consistent
 with the project's own rule that the LLM never computes anything; here it

@@ -26,7 +26,7 @@ sealed interface ApiOutcome<out T> {
  * Every network call the UI makes goes through here.
  *
  * The one rule this class exists to enforce: a failure is reported as a
- * failure, with the exception type and message intact (CLAUDE.md gotcha #4 -
+ * failure, with the exception type and message intact (agent.md gotcha #4 -
  * a bare `catch { return null }` in this project once hid an instant HTTP 429
  * behind two debugging sessions' worth of "it's probably just slow"). No
  * method here ever returns a plausible-looking substitute for data it did

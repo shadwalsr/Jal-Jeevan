@@ -101,7 +101,7 @@ class TestAnswerSynthesis:
 class TestVesselClassAndPassageParsing:
     """
     Sailor/trader coverage for the LLM-free parser. This path has to be
-    trustworthy on its own merits, not just as a backup (CLAUDE.md's
+    trustworthy on its own merits, not just as a backup (agent.md's
     convention for rule_based.py): if the Groq quota is out, this is what
     decides whether a trader asking about a tanker gets scored as a tanker
     or, silently, as an 8m fishing boat.

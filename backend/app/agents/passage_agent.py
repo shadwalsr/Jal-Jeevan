@@ -130,7 +130,7 @@ def _build_corridor(origin_cell: str, dest_cell: str, rings: int) -> list[str]:
     """
     try:
         spine = h3.h3_line(origin_cell, dest_cell)
-    except Exception as exc:  # never swallow silently — CLAUDE.md gotcha #4
+    except Exception as exc:  # never swallow silently — agent.md gotcha #4
         print(f"passage_agent: h3_line failed ({type(exc).__name__}: {exc}) — falling back to disk union")
         spine = [origin_cell, dest_cell]
 

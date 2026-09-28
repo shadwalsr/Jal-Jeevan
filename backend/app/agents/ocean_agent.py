@@ -131,7 +131,7 @@ async def run_ocean_agent(lat: float, lon: float) -> OceanState:
         # captures one) instead of a generic message — matches the pattern
         # used for tide just above. A blanket "all sources failed" with no
         # reason is exactly what let the NOAA/Copernicus SST failures go
-        # unnoticed (see CLAUDE.md gotcha #4).
+        # unnoticed (see agent.md gotcha #4).
         noaa_reason = noaa_result.get("error") or noaa_result.get("status")
         copernicus_reason = copernicus_result.get("error") or copernicus_result.get("status")
         missing.append(f"SST (NOAA: {noaa_reason}; Copernicus: {copernicus_reason})")

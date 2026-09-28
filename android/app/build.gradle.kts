@@ -22,7 +22,7 @@ android {
 
         // Default backend base URL. 10.0.2.2 is the Android emulator's alias
         // for the host machine's 127.0.0.1, where `uvicorn app.main:app
-        // --port 8000` runs (see the repo root CLAUDE.md). On a physical
+        // --port 8000` runs (see the repo root agent.md). On a physical
         // device this is wrong by definition — override it at runtime in
         // Settings, no rebuild needed (SettingsRepository).
         buildConfigField("String", "DEFAULT_API_BASE", "\"http://10.0.2.2:8000\"")

@@ -13,7 +13,7 @@ interface Props {
  *
  * Ports, not free text or a geocoded place name: the ports table holds
  * HARBOUR ENTRANCE coordinates, whereas geocoding a city name resolves to
- * the city centre — which is on land and correctly hard-vetoes (CLAUDE.md's
+ * the city centre — which is on land and correctly hard-vetoes (agent.md's
  * Visakhapatnam note). Offering only real, plannable endpoints means a
  * failed passage here always means something about the water, never about
  * the place lookup.

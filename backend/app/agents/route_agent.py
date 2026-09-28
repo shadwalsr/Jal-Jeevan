@@ -87,7 +87,7 @@ async def _score_point(
     RiskAssessment itself so callers can read hard_constraints, risk_score,
     etc. directly.
     """
-    # All four independent lookups run concurrently (see CLAUDE.md gotcha #1)
+    # All four independent lookups run concurrently (see agent.md gotcha #1)
     # — this used to run mpa_check sequentially after marine/wx, and skipped
     # depth entirely. Skipping depth was the real bug (26 Aug 2026): bathymetry
     # is a fast, local, already-open-file lookup (no network I/O — see
