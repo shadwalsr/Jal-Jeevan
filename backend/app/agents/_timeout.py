@@ -44,7 +44,7 @@ import asyncio
 # results instead of keeping whatever sources already answered. Raising the
 # ceiling avoids it here rather than fixing it — the durable fix is for each
 # agent to bound its own sub-sources and always return what it collected.
-AGENT_TIMEOUT_S = 300
+AGENT_TIMEOUT_S = 40
 
 
 async def run_with_timeout(coro, agent_name: str, empty_state):

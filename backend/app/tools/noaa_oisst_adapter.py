@@ -19,6 +19,7 @@ async def get_sst(lat: float, lon: float) -> dict:
     try:
         e = ERDDAP(server=settings.NOAA_ERDDAP_URL, protocol="griddap")
         e.dataset_id = "ncdcOisst21Agg_LonPM180"
+        e.requests_kwargs = {"timeout": 10.0}
         # erddapy validates a fresh `e.constraints = {...}` assignment against
         # the keys it expects from griddap_initialize() and raises "keys in
         # e.constraints have changed. Re-run e.griddap_initialize" if they
@@ -38,7 +39,10 @@ async def get_sst(lat: float, lon: float) -> dict:
             with netcdf_lock:
                 return e.to_xarray()
 
-        ds = await loop.run_in_executor(network_executor, _fetch_noaa_locked)
+        ds = await asyncio.wait_for(
+            loop.run_in_executor(network_executor, _fetch_noaa_locked),
+            timeout=12.0,
+        )
         sst_val = float(ds["sst"].mean().values)
         result = {
             "source": "NOAA OISST v2.1",

@@ -104,6 +104,10 @@ async def _score_point(
         check_mpa(lat, lon),
         get_depth(lat, lon),
     )
+    is_land = bool(depth.get("is_land"))
+    # Open-Meteo marine grid covers sea water only; null wave_height over a successful response indicates land
+    if marine.get("status") == "success" and marine.get("wave_height_m") is None:
+        is_land = True
 
     ocean = OceanState(
         significant_wave_height_m=marine.get("wave_height_m"),
@@ -130,7 +134,7 @@ async def _score_point(
         mpa_name=mpa_check.get("name"),
         nearest_port_distance_km=distance_from_origin_km,
         depth_m=depth.get("depth_m"),
-        is_land=bool(depth.get("is_land")),
+        is_land=is_land,
         missing=geo_missing,
     )
 
@@ -147,32 +151,26 @@ async def _score_point(
 
 
 async def quick_check(lat: float, lon: float, vessel: VesselProfile) -> RiskAssessment:
-    """
-    Public entry point for a fast, single-point safety check — the same
-    Open-Meteo + MPA + bathymetry path the candidate scan uses (see
-    _score_point's docstring), deliberately NOT the full Copernicus/tide/SST
-    Ocean Agent. This exists for the live safety monitor
-    (/marine/quick-check, polled every ~10s from a moving vessel's browser)
-    — that cadence would exhaust the Copernicus login/dataset-open pipeline
-    and the DB pool (see route_optimizer.py's MAX_CONCURRENT_CELL_SCORES fix
-    for exactly that failure mode) if it hit the full multi-source path.
-    Same shared check_hard_constraints veto logic either way — this is
-    faster, not less safe.
-    """
     return await _score_point(lat, lon, vessel)
 
 
 async def _score_candidate(lat: float, lon: float, distance_km: float, bearing: float, vessel: VesselProfile) -> RouteCandidate:
     risk = await _score_point(lat, lon, vessel, distance_from_origin_km=distance_km)
-    rejected = risk.hard_constraints.vetoed
-    reason = "; ".join(risk.hard_constraints.reasons) if rejected else None
+    is_insufficient = risk.risk_level == "INSUFFICIENT_DATA" or risk.insufficient_confidence
+    rejected = risk.hard_constraints.vetoed or is_insufficient
+    if risk.hard_constraints.vetoed:
+        reason = "; ".join(risk.hard_constraints.reasons)
+    elif is_insufficient:
+        reason = risk.confidence_reason or "Insufficient marine data (point is on land or outside marine coverage)"
+    else:
+        reason = None
 
     return RouteCandidate(
         lat=lat,
         lon=lon,
         distance_from_origin_km=round(distance_km, 1),
         bearing_deg=bearing,
-        risk_score=risk.risk_score,
+        risk_score=999 if is_insufficient else risk.risk_score,
         risk_level=risk.risk_level,
         rejected=rejected,
         rejection_reason=reason,
@@ -288,29 +286,30 @@ async def _verify_best(candidates: list[RouteCandidate], vessel: VesselProfile):
 
     rejections = []
     for candidate, risk, w, o, g in verified:
-        if not risk.hard_constraints.vetoed:
+        if not risk.hard_constraints.vetoed and risk.risk_level != "INSUFFICIENT_DATA" and not risk.insufficient_confidence:
             return candidate, risk, w, o, g, rejections
+        rejection_cause = (
+            '; '.join(risk.hard_constraints.reasons)
+            if risk.hard_constraints.vetoed
+            else (risk.confidence_reason or f"risk assessment was {risk.risk_level}")
+        )
         rejections.append(
             f"{candidate.lat:.2f},{candidate.lon:.2f} ({candidate.bearing_deg:.0f} deg, "
-            f"{candidate.distance_from_origin_km}km): scan said {candidate.risk_level} but full "
-            f"detail check found: {'; '.join(risk.hard_constraints.reasons)}"
+            f"{candidate.distance_from_origin_km}km): full detail check found: {rejection_cause}"
         )
     return None, None, None, None, None, rejections
 
 
-# Reduced from 3 to 1 (5 Sep 2026): each verification runs the full Ocean
-# Agent (Copernicus + INCOIS + NOAA + tides), which takes 25-40s cold due to
-# the netcdf_lock serialising dataset opens. Verifying 3 candidates triples
-# wall time and was the main contributor to the 60s timeout — the fast scan
-# already checks bathymetry (land/depth veto), MPA, and Open-Meteo weather/
-# waves, so the top-1 winner is almost never overturned by verification.
 MAX_VERIFICATION_ATTEMPTS = 1
 
 
 async def find_safest_zone(lat: float, lon: float, range_km: float, vessel: VesselProfile) -> RouteRecommendation:
     # ---- Phase 1: the range the caller actually asked about.
     all_candidates = await _fast_scan(lat, lon, [range_km], vessel)
-    viable = sorted((c for c in all_candidates if not c.rejected), key=lambda c: c.risk_score)
+    viable = sorted(
+        (c for c in all_candidates if not c.rejected and c.risk_level != "INSUFFICIENT_DATA"),
+        key=lambda c: c.risk_score,
+    )
     best, destination_risk, dest_weather, dest_ocean, dest_geo, verification_rejections = (
         await _verify_best(viable, vessel) if viable else (None, None, None, None, None, [])
     )
@@ -334,7 +333,7 @@ async def find_safest_zone(lat: float, lon: float, range_km: float, vessel: Vess
             # 700km away. Distance is bucketed to 10km so that candidates at
             # effectively the same reach still tie-break on risk.
             outer_viable = sorted(
-                (c for c in outer if not c.rejected),
+                (c for c in outer if not c.rejected and c.risk_level != "INSUFFICIENT_DATA"),
                 key=lambda c: (round((c.distance_from_origin_km or 0) / 10.0), c.risk_score),
             )
             if outer_viable:
