@@ -27,7 +27,7 @@ export const INDIAN_LANGUAGES: IndianLanguage[] = [
   { displayName: "Manipuri", nativeScript: "মেইতেই লোন্", bcp47Code: "mni-IN", region: "northeast" },
   { displayName: "Bodo", nativeScript: "बड़ो", bcp47Code: "brx-IN", region: "northeast" },
   { displayName: "Maithili", nativeScript: "मैथिली", bcp47Code: "mai-IN", region: "bihar" },
-  { displayName: "Auto-Detect (Any Indian Language)", nativeScript: "🌐 Auto", bcp47Code: "unknown", region: "auto" },
+  { displayName: "Auto-Detect (Any Indian Language)", nativeScript: "Auto", bcp47Code: "unknown", region: "auto" },
   { displayName: "English", nativeScript: "English", bcp47Code: "en-IN", region: "english" },
 ];
 

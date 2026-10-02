@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import * as L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { getBoundaries, type RouteWaypointRisk } from "./api";
+import { getBoundaries, type RouteWaypointRisk, type DiversionPort } from "./api";
 
 /**
  * Leaflet, not MapLibre GL JS — deliberate, and a real fix for a real
@@ -83,12 +83,13 @@ function ensureHatchPattern(svgRoot: SVGSVGElement) {
 
 // Both an OptimizedRoute (radial search) and a PassagePlan (port-to-port)
 // carry the same found_route + risk-scored waypoint list, which is all this
-// map needs to draw a path. Typing on that shared shape rather than on
-// either concrete result keeps one drawing path for both, instead of two
-// that can drift apart visually.
+// map needs to draw a path.
 interface DrawablePath {
   found_route: boolean;
   waypoints: RouteWaypointRisk[];
+  origin_name?: string | null;
+  destination_name?: string | null;
+  diversion_ports?: DiversionPort[];
 }
 
 interface Props {
@@ -292,18 +293,89 @@ export default function MarineMap({ lat, lon, route }: Props) {
       const group = L.layerGroup();
       const coords = route.waypoints.map((w) => [w.lat, w.lon] as [number, number]);
 
-      L.polyline(coords, { color: "#3ecfa8", weight: 3, dashArray: "1,1" }).addTo(group);
+      // Voyage corridor line
+      L.polyline(coords, { color: "#10b981", weight: 3.5, dashArray: "4,4", opacity: 0.9 }).addTo(group);
 
+      const totalWaypoints = route.waypoints.length;
+
+      // Draw Diversion Ports if present (e.g. Kozhikode, New Mangalore, Karwar)
+      if (route.diversion_ports && route.diversion_ports.length > 0) {
+        route.diversion_ports.forEach((dp) => {
+          L.circleMarker([dp.lat, dp.lon], {
+            radius: 6,
+            color: "#ffffff",
+            weight: 2,
+            fillColor: "#f59e0b",
+            fillOpacity: 1,
+          })
+            .bindPopup(
+              `<div style="font-family: system-ui, -apple-system, sans-serif; font-size: 12px; line-height: 1.4;">` +
+              `<strong style="color: #d97706; font-size: 13px;">Diversion Port: ${dp.name}</strong><br/>` +
+              `<span style="color: #4b5563;">Bolt-hole clearance: <strong>${dp.distance_km.toFixed(1)} km</strong> from corridor</span><br/>` +
+              `<span style="font-size: 11px; color: #6b7280;">Coordinates: ${dp.lat.toFixed(4)}, ${dp.lon.toFixed(4)}</span>` +
+              `</div>`
+            )
+            .addTo(group);
+        });
+      }
+
+      // Draw Waypoints
       route.waypoints.forEach((w, i) => {
-        L.circleMarker([w.lat, w.lon], {
-          radius: 7,
-          color: "#ffffff",
-          weight: 2,
-          fillColor: riskColor(w.risk_score),
-          fillOpacity: 1,
-        })
-          .bindPopup(`Waypoint ${i + 1}: risk ${w.risk_score}/100`)
-          .addTo(group);
+        const isStart = i === 0;
+        const isEnd = i === totalWaypoints - 1;
+
+        if (isStart) {
+          // Departure Port Approach
+          L.circleMarker([w.lat, w.lon], {
+            radius: 9,
+            color: "#ffffff",
+            weight: 3,
+            fillColor: "#059669",
+            fillOpacity: 1,
+          })
+            .bindPopup(
+              `<div style="font-family: system-ui, -apple-system, sans-serif; font-size: 12px; line-height: 1.4;">` +
+              `<strong style="color: #059669; font-size: 14px;">Departure: ${w.name || route.origin_name || "Origin Port"}</strong><br/>` +
+              `<span>Passage origin (${w.lat.toFixed(4)}, ${w.lon.toFixed(4)})</span><br/>` +
+              `<span style="font-size: 11px; color: #6b7280;">Risk: ${w.risk_score}/100</span>` +
+              `</div>`
+            )
+            .addTo(group);
+        } else if (isEnd) {
+          // Arrival Port Fairway
+          L.circleMarker([w.lat, w.lon], {
+            radius: 9,
+            color: "#ffffff",
+            weight: 3,
+            fillColor: "#0284c7",
+            fillOpacity: 1,
+          })
+            .bindPopup(
+              `<div style="font-family: system-ui, -apple-system, sans-serif; font-size: 12px; line-height: 1.4;">` +
+              `<strong style="color: #0284c7; font-size: 14px;">Arrival: ${w.name || route.destination_name || "Destination Port"}</strong><br/>` +
+              `<span>Fairway entrance (${w.lat.toFixed(4)}, ${w.lon.toFixed(4)})</span><br/>` +
+              `<span style="font-size: 11px; color: #6b7280;">Risk: ${w.risk_score}/100</span>` +
+              `</div>`
+            )
+            .addTo(group);
+        } else {
+          // Intermediate coastal corridor waypoint
+          L.circleMarker([w.lat, w.lon], {
+            radius: 6.5,
+            color: "#ffffff",
+            weight: 2,
+            fillColor: riskColor(w.risk_score),
+            fillOpacity: 1,
+          })
+            .bindPopup(
+              `<div style="font-family: system-ui, -apple-system, sans-serif; font-size: 12px; line-height: 1.4;">` +
+              `<strong>Waypoint ${i + 1}: ${w.name || `Waypoint ${i + 1}`}</strong><br/>` +
+              `<span>Risk score: <strong>${w.risk_score}/100</strong></span><br/>` +
+              `<span style="font-size: 11px; color: #6b7280;">${w.lat.toFixed(4)}, ${w.lon.toFixed(4)}</span>` +
+              `</div>`
+            )
+            .addTo(group);
+        }
       });
 
       group.addTo(map);

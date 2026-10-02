@@ -1183,6 +1183,128 @@ input {
   color: var(--ink-2);
 }
 
+.passage-panel__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.passage-sample-tag {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 2px 6px;
+  background: rgba(16, 185, 129, 0.15);
+  color: #059669;
+  border-radius: 4px;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.btn--sample-voyage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  padding: 7px 10px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #047857;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn--sample-voyage:hover:not(:disabled) {
+  background: #d1fae5;
+  border-color: #6ee7b7;
+  transform: translateY(-1px);
+}
+
+.btn--sample-active {
+  background: #059669;
+  color: #ffffff;
+  border-color: #047857;
+}
+
+.btn--sample-active:hover:not(:disabled) {
+  background: #047857;
+  color: #ffffff;
+}
+
+.header-strip__sample-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(16, 185, 129, 0.12);
+  color: #065f46;
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  font-size: 11px;
+  font-weight: 500;
+  padding: 3px 8px;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.header-strip__sample-badge:hover {
+  background: rgba(16, 185, 129, 0.22);
+}
+
+.chat-suggestions {
+  padding: 10px 14px 6px;
+  background: var(--surface);
+  border-top: 1px solid var(--rule);
+  border-radius: var(--radius) var(--radius) 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.chat-suggestions__label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ink-2);
+}
+
+.chat-suggestions__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chat-chip {
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 14px;
+  border: 1px solid var(--rule);
+  background: var(--field);
+  color: var(--ink);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.chat-chip:hover {
+  border-color: var(--rule-heavy);
+  background: var(--surface);
+}
+
+.chat-chip--featured {
+  border-color: #a7f3d0;
+  background: #ecfdf5;
+  color: #047857;
+  font-weight: 500;
+}
+
+.chat-chip--featured:hover {
+  background: #d1fae5;
+  border-color: #6ee7b7;
+}
+
 /* Inline leg annotations in the passage table. "no forecast" deliberately
    reads as a warning rather than a neutral tag — it marks the one thing on
    the plan the system genuinely does not know. */

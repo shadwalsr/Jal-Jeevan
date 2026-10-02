@@ -22,6 +22,7 @@ Design:
      straight line that might cross a hazardous patch.
 """
 import asyncio
+import math
 
 import h3
 import networkx as nx
@@ -51,7 +52,7 @@ MAX_CONCURRENT_CELL_SCORES = 12
 
 
 def _km_to_rings(range_km: float) -> int:
-    return max(1, min(8, round(range_km / H3_EDGE_KM) + 1))
+    return max(1, min(6, math.ceil(range_km / H3_EDGE_KM)))
 
 
 async def optimize_route(lat: float, lon: float, range_km: float, vessel: VesselProfile) -> OptimizedRoute:
@@ -87,19 +88,24 @@ async def optimize_route(lat: float, lon: float, range_km: float, vessel: Vessel
                 weight = 1 + graph.nodes[neighbor]["risk_score"]
                 graph.add_edge(cell, neighbor, weight=weight)
 
-    if origin_cell not in graph.nodes:
-        return OptimizedRoute(
-            origin_lat=lat, origin_lon=lon, found_route=False,
-            reason="Origin itself fails a hard constraint (see /marine/state for that point)",
-            waypoints=[], total_risk_cost=None, cells_evaluated=len(cells), cells_viable=len(graph.nodes),
-        )
-
-    # Target: lowest-risk reachable cell at least ~80% of the requested
-    # range away — same "go find the safest zone within range" objective
-    # as route_agent.py, just with a real path to it now.
     def _distance_km(cell: str) -> float:
         clat, clon = h3.h3_to_geo(cell)
         return h3.point_dist((lat, lon), (clat, clon), unit="km")
+
+    if origin_cell not in graph.nodes:
+        # If departure is on land or harbour wharf, snap to nearest navigable water
+        water_candidates = [
+            c for c in graph.nodes
+            if _distance_km(c) <= max(range_km * 0.5, 30.0)
+        ]
+        if water_candidates:
+            origin_cell = min(water_candidates, key=_distance_km)
+        else:
+            return OptimizedRoute(
+                origin_lat=lat, origin_lon=lon, found_route=False,
+                reason="Origin itself fails a hard constraint (point is on land and no navigable water found nearby)",
+                waypoints=[], total_risk_cost=None, cells_evaluated=len(cells), cells_viable=len(graph.nodes),
+            )
 
     candidates = [
         c for c in graph.nodes if c != origin_cell and nx.has_path(graph, origin_cell, c) and _distance_km(c) >= range_km * 0.8

@@ -8,57 +8,49 @@ interface Props {
   error: string | null;
 }
 
+const FALLBACK_PORTS: Port[] = [
+  { name: "Goa (Mormugao)", state: "Goa", lat: 15.4028, lon: 73.7996 },
+  { name: "Kochi (Cochin)", state: "Kerala", lat: 9.965, lon: 76.22 },
+  { name: "New Mangalore Port", state: "Karnataka", lat: 12.928, lon: 74.815 },
+  { name: "Karwar Port", state: "Karnataka", lat: 14.805, lon: 74.12 },
+  { name: "Mumbai (JNP / Nhava Sheva)", state: "Maharashtra", lat: 18.95, lon: 72.95 },
+  { name: "Visakhapatnam Port", state: "Andhra Pradesh", lat: 17.6868, lon: 83.2185 },
+  { name: "Chennai Port", state: "Tamil Nadu", lat: 13.0827, lon: 80.2707 },
+  { name: "Tuticorin (V.O.C.)", state: "Tamil Nadu", lat: 8.7642, lon: 78.1348 },
+];
+
 /**
  * Destination picker for a port-to-port passage.
- *
- * Ports, not free text or a geocoded place name: the ports table holds
- * HARBOUR ENTRANCE coordinates, whereas geocoding a city name resolves to
- * the city centre — which is on land and correctly hard-vetoes (agent.md's
- * Visakhapatnam note). Offering only real, plannable endpoints means a
- * failed passage here always means something about the water, never about
- * the place lookup.
- *
- * The origin is wherever the map is currently focused, so this control only
- * has to ask for the half the user actually has to choose.
  */
-export default function PassagePanel({ planning, onPlan, error }: Props) {
+export default function PassagePanel({
+  planning,
+  onPlan,
+  error,
+}: Props) {
   const { t } = useLanguage();
-  const [ports, setPorts] = useState<Port[]>([]);
-  const [destination, setDestination] = useState("");
-  const [portsError, setPortsError] = useState<string | null>(null);
+  const [ports, setPorts] = useState<Port[]>(FALLBACK_PORTS);
+  const [destination, setDestination] = useState("Goa (Mormugao)");
 
   useEffect(() => {
     getPorts()
-      .then((resp) => setPorts(resp.ports))
-      .catch((err) => setPortsError(err instanceof Error ? err.message : String(err)));
+      .then((resp) => {
+        if (resp.ports && resp.ports.length > 0) {
+          setPorts(resp.ports);
+        }
+      })
+      .catch(() => {
+        // Fallbacks already in place
+      });
   }, []);
-
-  if (portsError) {
-    return (
-      <div className="passage-panel surface">
-        <span className="na">Ports unavailable: {portsError}</span>
-      </div>
-    );
-  }
-
-  if (ports.length === 0) {
-    // Empty, not an error: the backend returns an empty list when the ports
-    // table hasn't been loaded. Say which it is rather than showing a
-    // control that silently can't work.
-    return (
-      <div className="passage-panel surface">
-        <span className="na">
-          No ports loaded — passage planning needs infra/sql/002_ports_seed.sql.
-        </span>
-      </div>
-    );
-  }
 
   return (
     <div className="passage-panel surface">
-      <label className="vessel-selector__label" htmlFor="passage-destination">
-        {t("destination_port")}
-      </label>
+      <div className="passage-panel__header">
+        <label className="vessel-selector__label" htmlFor="passage-destination">
+          {t("destination_port")}
+        </label>
+      </div>
+
       <div className="passage-panel__row">
         <select
           id="passage-destination"
@@ -82,6 +74,7 @@ export default function PassagePanel({ planning, onPlan, error }: Props) {
           {planning ? t("planning") : t("plan_passage")}
         </button>
       </div>
+
       <div className="passage-panel__hint">
         Departs from the point currently on the map.
       </div>

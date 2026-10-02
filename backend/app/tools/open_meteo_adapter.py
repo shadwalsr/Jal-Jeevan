@@ -18,6 +18,18 @@ import httpx
 from app.core.cache import cache_get, cache_set
 from app.core.config import settings
 
+_shared_client: httpx.AsyncClient | None = None
+
+
+def _get_client() -> httpx.AsyncClient:
+    global _shared_client
+    if _shared_client is None or _shared_client.is_closed:
+        _shared_client = httpx.AsyncClient(
+            timeout=25.0,
+            limits=httpx.Limits(max_keepalive_connections=50, max_connections=100),
+        )
+    return _shared_client
+
 
 async def _get_with_retry(client: httpx.AsyncClient, url: str, params: dict, retries: int = 1):
     """
@@ -54,10 +66,10 @@ async def get_marine_forecast(lat: float, lon: float, hour_offset: int = 0) -> d
         if cached is not None:
             return cached
     try:
-        async with httpx.AsyncClient(timeout=60.0) as client:
-            resp = await _get_with_retry(
-                client,
-                settings.OPEN_METEO_MARINE_URL,
+        client = _get_client()
+        resp = await _get_with_retry(
+            client,
+            settings.OPEN_METEO_MARINE_URL,
                 {
                     "latitude": lat,
                     "longitude": lon,
@@ -70,7 +82,7 @@ async def get_marine_forecast(lat: float, lon: float, hour_offset: int = 0) -> d
                     "timezone": "auto",
                 },
             )
-            payload = resp.json()
+        payload = resp.json()
         hourly = payload.get("hourly", {})
         idx = _nearest_now_index(hourly.get("time") or []) + hour_offset
         idx = max(0, min(idx, len(hourly.get("time") or []) - 1))
@@ -104,10 +116,10 @@ async def get_weather_forecast(lat: float, lon: float, hour_offset: int = 0) -> 
         if cached is not None:
             return cached
     try:
-        async with httpx.AsyncClient(timeout=60.0) as client:
-            resp = await _get_with_retry(
-                client,
-                "https://api.open-meteo.com/v1/forecast",
+        client = _get_client()
+        resp = await _get_with_retry(
+            client,
+            "https://api.open-meteo.com/v1/forecast",
                 {
                     "latitude": lat,
                     "longitude": lon,
@@ -119,7 +131,7 @@ async def get_weather_forecast(lat: float, lon: float, hour_offset: int = 0) -> 
                     "timezone": "auto",
                 },
             )
-            payload = resp.json()
+        payload = resp.json()
         hourly = payload.get("hourly", {})
         idx = _nearest_now_index(hourly.get("time") or []) + hour_offset
         idx = max(0, min(idx, len(hourly.get("time") or []) - 1))

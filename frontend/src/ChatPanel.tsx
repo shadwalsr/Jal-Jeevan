@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { sendChat, textToSpeech, type ChatResponse } from "./api";
+import { sendChat, textToSpeech, type ChatResponse, type PassagePlan } from "./api";
 import { useLanguage } from "./i18n/LanguageContext";
 import { VoiceInputModal } from "./VoiceInputModal";
 
@@ -12,6 +12,7 @@ interface Message {
 
 interface Props {
   onLocationResolved: (lat: number, lon: number) => void;
+  onPassageResolved?: (passage: PassagePlan) => void;
   // Browser geolocation, when granted (see App.tsx) — sent as a last-resort
   // fallback so "where can I go to fish?" (no place named) resolves against
   // where the user actually is, instead of going unanswered. A place named
@@ -114,6 +115,7 @@ function riskModifier(level: string): string {
 
 export default function ChatPanel({
   onLocationResolved,
+  onPassageResolved,
   clientLocation,
   locationStatus,
   open,
@@ -224,11 +226,22 @@ export default function ChatPanel({
       setSessionId(resp.session_id);
       const newAssistantIndex = messages.length + 1;
       setMessages((m) => [...m, { role: "assistant", text: resp.answer, response: resp }]);
-      const data = resp.data as { lat?: number; lon?: number; origin_lat?: number; origin_lon?: number };
-      const lat = data.lat ?? data.origin_lat;
-      const lon = data.lon ?? data.origin_lon;
-      if (typeof lat === "number" && typeof lon === "number") {
-        onLocationResolved(lat, lon);
+      const data = resp.data as {
+        lat?: number;
+        lon?: number;
+        origin_lat?: number;
+        origin_lon?: number;
+        legs?: unknown[];
+        found_route?: boolean;
+      };
+      if (data && data.legs && Array.isArray(data.legs) && onPassageResolved) {
+        onPassageResolved(resp.data as unknown as PassagePlan);
+      } else {
+        const lat = data?.lat ?? data?.origin_lat;
+        const lon = data?.lon ?? data?.origin_lon;
+        if (typeof lat === "number" && typeof lon === "number") {
+          onLocationResolved(lat, lon);
+        }
       }
 
       // Automatically read out the answer in the regional language if queried via voice!
@@ -264,26 +277,6 @@ export default function ChatPanel({
         </button>
       </div>
 
-      {!hasContent && (
-        <div className="chat-log surface" style={{ display: "flex", flexDirection: "column", gap: "8px", padding: "12px 14px", maxHeight: "160px", overflowY: "auto" }}>
-          <div style={{ fontSize: "12px", fontWeight: 600, color: "var(--ink-2)", textTransform: "uppercase", letterSpacing: "0.04em" }}>
-            {t("starter_questions_title")}
-          </div>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
-            {[t("sample_q1"), t("sample_q2"), t("sample_q3"), t("sample_q4")].map((q, idx) => (
-              <button
-                key={idx}
-                type="button"
-                className="btn"
-                style={{ fontSize: "12px", padding: "5px 10px", textAlign: "left", height: "auto", borderRadius: "14px", lineHeight: 1.3 }}
-                onClick={() => handleSend(q)}
-              >
-                {q}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
 
       {hasContent && (
         <div className="chat-log surface" ref={logRef}>
@@ -357,12 +350,12 @@ export default function ChatPanel({
                     >
                       {playingMessageIdx === i ? (
                         <>
-                          <span>⏹️</span>
+                          <span>■</span>
                           <span>Stop</span>
                         </>
                       ) : (
                         <>
-                          <span>🔊</span>
+                          <span>♪</span>
                           <span>Listen</span>
                         </>
                       )}
@@ -457,6 +450,35 @@ export default function ChatPanel({
           })}
 
           {loading && <ThinkingState />}
+        </div>
+      )}
+
+      {!hasContent && (
+        <div className="chat-suggestions">
+          <div className="chat-suggestions__label">Suggested Prompts:</div>
+          <div className="chat-suggestions__chips">
+            <button
+              type="button"
+              className="chat-chip chat-chip--featured"
+              onClick={() => handleSend("Sail from Kochi to Goa Port")}
+            >
+              Sail from Kochi to Goa Port
+            </button>
+            <button
+              type="button"
+              className="chat-chip"
+              onClick={() => handleSend("Is it safe to fish off Kochi today?")}
+            >
+              Safe fishing near Kochi
+            </button>
+            <button
+              type="button"
+              className="chat-chip"
+              onClick={() => handleSend("Current wave height and wind off Goa")}
+            >
+              Sea state off Goa
+            </button>
+          </div>
         </div>
       )}
 

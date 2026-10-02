@@ -102,6 +102,10 @@ class VesselProfile(BaseModel):
     # under-keel clearance rule rather than the small-boat fixed margin. ---
     commercial: bool = False
 
+    @property
+    def is_sailing(self) -> bool:
+        return self.propulsion in ("sail", "motor_sail")
+
 
 class HardConstraintResult(BaseModel):
     """
@@ -218,6 +222,7 @@ class RouteWaypointRisk(BaseModel):
     lat: float
     lon: float
     risk_score: int
+    name: str | None = None
 
 
 class OptimizedRoute(BaseModel):

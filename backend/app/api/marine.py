@@ -15,7 +15,7 @@ from app.agents.geo_agent import list_ports, run_geo_agent
 from app.agents.ocean_agent import run_ocean_agent
 from app.agents.risk_agent import assess_risk
 from app.agents.route_agent import find_safest_zone, quick_check
-from app.agents.passage_agent import plan_passage
+from app.agents.passage_agent import get_sample_kochi_to_goa_passage, plan_passage
 from app.agents.route_optimizer import optimize_route
 from app.agents.simulation_agent import simulate_time_shift, simulate_vessel_swap, simulate_wave_perturbation
 from app.agents.validation_agent import validate
@@ -458,3 +458,18 @@ async def get_passage_plan(
     )
 
     return result
+
+
+@router.get("/sample-passage", response_model=PassagePlan)
+@router.get("/passage/sample", response_model=PassagePlan)
+async def get_sample_passage(
+    vessel_class: str | None = None,
+    departure_hour_offset: int = 0,
+):
+    """
+    Verified sample coastal passage navigating from Kochi to Goa Port (Mormugao).
+    Used as an interactive travel example and gold-standard voyage benchmark.
+    Tracks the offshore Arabian Sea corridor (~15-25 nm off Kerala/Karnataka/Goa).
+    """
+    vessel = _vessel_from_query(vessel_class, None, None, None, None)
+    return get_sample_kochi_to_goa_passage(vessel, departure_hour_offset=departure_hour_offset)

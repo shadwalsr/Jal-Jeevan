@@ -11,15 +11,14 @@ import {
   type OptimizedRoute,
   type PassagePlan,
 } from "./api";
+
 import { LanguageProvider, useLanguage } from "./i18n/LanguageContext";
 import { LanguageSelector } from "./LanguageSelector";
 import "./app.css";
 
-// Verified real demo point — 15km offshore Visakhapatnam. Puri's exact
-// coastline sits on a genuinely very shallow river-delta shelf and will
-// correctly hit the draft-vs-depth veto (see agent.md gotcha #8).
-const DEFAULT_LAT = 17.65;
-const DEFAULT_LON = 83.35;
+// Default map centre — Indian coastal waters
+const DEFAULT_LAT = 12.5;
+const DEFAULT_LON = 75.0;
 
 type LocationStatus = "requesting" | "granted" | "denied" | "unsupported";
 
@@ -31,30 +30,16 @@ function AppContent() {
   const [routeLoading, setRouteLoading] = useState(false);
   const [routeError, setRouteError] = useState<string | null>(null);
   // Null means "the backend default" (the original 8m fishing boat) rather
-  // than a class this UI picked — see api.ts on why it is omitted from the
-  // request rather than sent as an empty string.
+  // than a class this UI picked
   const [vesselClass, setVesselClass] = useState<string | null>(null);
   const [passage, setPassage] = useState<PassagePlan | null>(null);
   const [passageLoading, setPassageLoading] = useState(false);
   const [passageError, setPassageError] = useState<string | null>(null);
   const [clientLocation, setClientLocation] = useState<{ lat: number; lon: number } | null>(null);
   const [locationStatus, setLocationStatus] = useState<LocationStatus>("requesting");
-  // Lives here, not inside ChatPanel: the reopen tab has to sit on a plain
-  // (untransformed) ancestor. .chat-dock carries `transform: translateX(...)`
-  // for centring, and a CSS transform on an ancestor becomes the containing
-  // block for any position:fixed descendant — so a reopen tab nested inside
-  // the dock could not reliably anchor to the viewport. Rendering it here,
-  // as a sibling of .chat-dock under the untransformed .app-shell, sidesteps
-  // that entirely.
   const [chatOpen, setChatOpen] = useState(true);
 
-  // Ask for location once, on load — this is what lets a question like
-  // "where can I go to fish?" (no place named) resolve against where the
-  // user actually is, instead of going unanswered (see ChatPanel/api.ts
-  // client_lat/client_lon and graph.py's resolve_location fallback).
-  // Best-effort only: a denial or an unsupported browser just means that
-  // one convenience is unavailable — everything else still works exactly
-  // as before by naming a place in the chat.
+  // Ask for location once, on load
   useEffect(() => {
     if (!("geolocation" in navigator)) {
       setLocationStatus("unsupported");
@@ -70,14 +55,13 @@ function AppContent() {
     );
   }, []);
 
+
+
   async function handleFindRoute() {
     setRouteLoading(true);
     setRouteError(null);
     try {
       const result = await getOptimizedRoute(lat, lon, 25, vesselClass ?? undefined);
-      // A radial route and a passage answer different questions; showing
-      // both at once would leave the map ambiguous about which path is
-      // being recommended.
       setPassage(null);
       setRoute(result);
     } catch (err) {
@@ -107,6 +91,7 @@ function AppContent() {
 
   const hasEvidence = route !== null || passage !== null;
 
+
   return (
     <div className="app-shell">
       {/* The map is the page, not a panel on it. */}
@@ -122,6 +107,8 @@ function AppContent() {
           {lat.toFixed(4)}, {lon.toFixed(4)}
         </span>
         <span className="header-strip__divider" />
+
+        <span className="header-strip__divider" />
         <LanguageSelector />
       </div>
 
@@ -136,9 +123,6 @@ function AppContent() {
         {routeError && (
           <div className="safety-readout surface safety-readout__error">{routeError}</div>
         )}
-        {/* Changing the vessel invalidates any result on screen: the same
-            water produces a genuinely different verdict for a different
-            hull, so keeping the old path visible would misattribute it. */}
         <div className="top-controls__panels">
           <VesselSelector
             value={vesselClass}
@@ -168,12 +152,15 @@ function AppContent() {
             setRoute(null);
             setPassage(null);
           }}
+          onPassageResolved={(p) => {
+            setRoute(null);
+            setPassage(p);
+            setLat(p.origin_lat);
+            setLon(p.origin_lon);
+          }}
         />
       </div>
 
-      {/* Mounted only while closed — a plain entrance animation is enough
-          here, since there is nothing to slide back FROM (the widget it
-          reopens does its own slide-up). */}
       {!chatOpen && (
         <button className="btn chat-reopen surface" onClick={() => setChatOpen(true)}>
           {t("show_chat")}

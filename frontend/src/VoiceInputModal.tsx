@@ -16,7 +16,7 @@ export function VoiceInputModal({ open, onClose, onTranscriptReady, onInputReady
 
   // Auto-Detect is the default: catches any Indian language automatically!
   const [selectedLanguage, setSelectedLanguage] = useState<IndianLanguage>(
-    () => COASTAL_PRIORITY_LANGUAGES[0] || { displayName: "Auto-Detect", nativeScript: "🌐 Auto", bcp47Code: "unknown", region: "auto" }
+    () => COASTAL_PRIORITY_LANGUAGES[0] || { displayName: "Auto-Detect", nativeScript: "Auto", bcp47Code: "unknown", region: "auto" }
   );
 
   // Default to native regional transcribe so voice queries stay in their original language
@@ -323,8 +323,8 @@ export function VoiceInputModal({ open, onClose, onTranscriptReady, onInputReady
         {/* Header Bar */}
         <div className="voice-sheet__top-bar">
           <div className="voice-sheet__title-row">
-            <span className="voice-sheet__title">🎙️ JalJeev Voice Assistant</span>
-            <span className="voice-sheet__badge">✨ Auto-Detect & Translate</span>
+            <span className="voice-sheet__title">JalJeev Voice Assistant</span>
+            <span className="voice-sheet__badge">Auto-Detect and Translate</span>
           </div>
           <button
             type="button"
@@ -347,7 +347,7 @@ export function VoiceInputModal({ open, onClose, onTranscriptReady, onInputReady
               disabled={isRecording || isProcessing}
               title="Speak in any regional language (Odia, Tamil, Hindi, etc.)"
             >
-              🗣️ Regional Language
+              Regional Language
             </button>
             <button
               type="button"
@@ -356,7 +356,7 @@ export function VoiceInputModal({ open, onClose, onTranscriptReady, onInputReady
               disabled={isRecording || isProcessing}
               title="Automatically translate regional speech to English"
             >
-              🌐 Translate to English
+              Translate to English
             </button>
           </div>
 
@@ -425,15 +425,15 @@ export function VoiceInputModal({ open, onClose, onTranscriptReady, onInputReady
         {/* Live Status Hint */}
         <div className="voice-sheet__status-badge">
           {errorMsg ? (
-            <span style={{ color: "var(--risk-high, #ef4444)", fontWeight: 500 }}>⚠️ {errorMsg}</span>
+            <span style={{ color: "var(--risk-high, #ef4444)", fontWeight: 500 }}>{errorMsg}</span>
           ) : isRecording ? (
-            <span style={{ color: "#ef4444", fontWeight: 600 }}>🔴 Listening to your voice...</span>
+            <span style={{ color: "#ef4444", fontWeight: 600 }}>Listening to your voice...</span>
           ) : isProcessing ? (
-            <span style={{ color: "#0b2545", fontWeight: 500 }}>⏳ Processing and translating...</span>
+            <span style={{ color: "#0b2545", fontWeight: 500 }}>Processing and translating...</span>
           ) : detectedLang ? (
-            <span style={{ color: "#10b981", fontWeight: 600 }}>🎯 {detectedLang}</span>
+            <span style={{ color: "#10b981", fontWeight: 600 }}>{detectedLang}</span>
           ) : (
-            <span style={{ color: "var(--ink-2, #64748b)" }}>🌐 Speaks any Indian regional language</span>
+            <span style={{ color: "var(--ink-2, #64748b)" }}>Speaks any Indian regional language</span>
           )}
         </div>
 
@@ -472,7 +472,7 @@ export function VoiceInputModal({ open, onClose, onTranscriptReady, onInputReady
             disabled={!transcript.trim() || isProcessing}
             title={transcript.trim() ? "Insert translated text into the chat input bar" : "Speak first to generate text"}
           >
-            ✏️ Put in Chat Box
+            Put in Chat Box
           </button>
 
           <button
@@ -482,7 +482,7 @@ export function VoiceInputModal({ open, onClose, onTranscriptReady, onInputReady
             disabled={!transcript.trim() || isProcessing}
             title={transcript.trim() ? "Send query directly to JalJeev" : "Speak first to enable Send Now"}
           >
-            🚀 Send Now
+            Send Now
           </button>
         </div>
 

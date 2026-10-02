@@ -97,14 +97,31 @@ async def _score_point(
     # a point that is actually on land could score as low-risk "LOW" here
     # and only get caught later (or not at all) when the winning candidate
     # gets its full detail recheck. See find_safest_zone for the other half
-    # of this fix.
-    marine, wx, mpa_check, depth = await asyncio.gather(
+    # 1. Fast local depth lookup first (0ms, no network I/O).
+    depth = await get_depth(lat, lon)
+    is_land = bool(depth.get("is_land"))
+
+    # If bathymetry definitively confirms land, this point is unconditionally vetoed
+    # by hard constraints. Returning immediately avoids making two external HTTP calls
+    # to Open-Meteo and a database call to PostGIS for every inland hex cell.
+    if is_land:
+        geo = GeoState(
+            inside_mpa=False,
+            nearest_port_distance_km=distance_from_origin_km,
+            depth_m=depth.get("depth_m", 0.0),
+            is_land=True,
+            missing=[],
+        )
+        ocean = OceanState(sources_used=[], missing=["on land"])
+        weather = WeatherState(sources_used=[], missing=["on land"])
+        return assess_risk(weather, ocean, geo, vessel, course_bearing_deg=course_bearing_deg)
+
+    # 2. For water cells, gather marine forecast, weather forecast, and MPA boundaries concurrently.
+    marine, wx, mpa_check = await asyncio.gather(
         open_meteo_adapter.get_marine_forecast(lat, lon, hour_offset=hour_offset),
         open_meteo_adapter.get_weather_forecast(lat, lon, hour_offset=hour_offset),
         check_mpa(lat, lon),
-        get_depth(lat, lon),
     )
-    is_land = bool(depth.get("is_land"))
     # Open-Meteo marine grid covers sea water only; null wave_height over a successful response indicates land
     if marine.get("status") == "success" and marine.get("wave_height_m") is None:
         is_land = True

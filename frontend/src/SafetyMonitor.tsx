@@ -39,7 +39,7 @@ export default function SafetyMonitor() {
   function notify(r: QuickCheckResult) {
     if (typeof Notification === "undefined" || Notification.permission !== "granted") return;
     try {
-      new Notification("⚠️ JalJeev — not safe to continue", {
+      new Notification("JalJeev — not safe to continue", {
         body: `${r.risk_level} (${r.risk_score}/100) at ${r.lat.toFixed(4)}, ${r.lon.toFixed(4)} — ${reasonText(r)}`,
         tag: "jaljeev-safety", // replaces any prior alert instead of stacking a new one every tick
       });
